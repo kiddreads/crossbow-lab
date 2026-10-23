@@ -1,0 +1,9 @@
+{
+  "name": "crossbow-lab",
+  "version": "1.0.0",
+  "description": "Measure and model a Lego Technic crossbow bolt from slow-motion video",
+  "scripts": {
+    "test": "node tests/math.test.js && python3 tests/fit_reference.py && node tests/smoke_jsdom.js"
+  },
+  "devDependencies": { "jsdom": "^24.0.0" }
+}

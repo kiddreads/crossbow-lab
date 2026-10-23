@@ -1,0 +1,8 @@
+# raw videos are large; keep them out of git (use Git LFS or release assets if you want to share them)
+*.mov
+*.MOV
+*.mp4
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store

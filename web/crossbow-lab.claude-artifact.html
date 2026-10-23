@@ -1,0 +1,1032 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Crossbow Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --paper:#f3f5f7;--panel:#ffffff;--ink:#101a24;--muted:#56677a;--line:#d3dbe3;
+  --blue:#0a58ca;--on-blue:#ffffff;--blue-soft:#dbe8fb;
+  --orange:#d9480f;--orange-soft:#fde5d8;
+  --tan:#dcc38f;--ruler-ink:#3a2e17;--beam:#c8cfd6;--beam-edge:#9aa5af;
+  --wall:#e8e3d8;--base:#f7f5f0;--floor:#cfc3ae;--door:#fbfaf7;--box:#232b33;--bolt:#0b1117;--bolt-edge:rgba(255,255,255,0);
+  --good:#17703f;--warn:#8a5200;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#0c131a;--panel:#142029;--ink:#e7eef5;--muted:#9bacbd;--line:#273949;
+    --blue:#6ea8ff;--on-blue:#07131f;--blue-soft:#12305a;
+    --orange:#ff8c55;--orange-soft:#442412;
+    --tan:#b79f6e;--beam:#33424f;--beam-edge:#53667a;
+    --wall:#3b3f46;--base:#464a52;--floor:#2e2a25;--door:#555a63;--box:#10161c;--bolt:#05080b;--bolt-edge:rgba(255,255,255,.45);
+    --good:#5fd49a;--warn:#f0b35c;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#0c131a;--panel:#142029;--ink:#e7eef5;--muted:#9bacbd;--line:#273949;
+  --blue:#6ea8ff;--on-blue:#07131f;--blue-soft:#12305a;
+  --orange:#ff8c55;--orange-soft:#442412;
+  --tan:#b79f6e;--beam:#33424f;--beam-edge:#53667a;
+  --wall:#3b3f46;--base:#464a52;--floor:#2e2a25;--door:#555a63;--box:#10161c;--bolt:#05080b;--bolt-edge:rgba(255,255,255,.45);
+  --good:#5fd49a;--warn:#f0b35c;
+}
+*,*::before,*::after{box-sizing:border-box}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--paper);z-index:40}
+h1,h2,h3{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;margin:0;line-height:1.15;letter-spacing:-.01em}
+h1{font-size:27px;font-weight:800}
+h2{font-size:23px;font-weight:800;margin:4px 0 6px}
+h3{font-size:18px;font-weight:600;margin:26px 0 8px}
+p{margin:0 0 10px}
+small,.small{font-size:14px;color:var(--muted)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--paper);padding:12px 16px 10px;border-bottom:1px solid var(--line)}
+.wrap{max-width:760px;margin:0 auto}
+.top p{margin:2px 0 0;color:var(--muted);font-size:15px}
+.beam{height:14px;margin:9px 0 10px;border-radius:7px;background-color:var(--beam);background-image:radial-gradient(circle at 10px 7px,var(--paper) 0 3.4px,var(--beam-edge) 3.8px 4.6px,transparent 5px);background-size:20px 14px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+.chip{flex:none;min-height:36px;padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:var(--on-blue)}
+main{max-width:760px;margin:0 auto;padding:16px 16px 100px}
+.tab{display:none}.tab.on{display:block}
+.lede{font-size:18px;margin:2px 0 14px}
+.stage{border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--panel)}
+canvas{display:block;width:100%}
+.bar{display:flex;gap:10px;align-items:center;margin:12px 0 4px}
+.btn{min-height:44px;padding:8px 16px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--on-blue)}
+.btn.danger{color:var(--orange);border-color:var(--orange)}
+.btn:disabled{opacity:.5;cursor:default}
+input[type=range]{flex:1;min-width:0;accent-color:var(--blue);height:32px}
+input[type=number],input[type=text],select,textarea{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-height:42px;max-width:100%}
+textarea{width:100%;min-height:120px;font-size:14px}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.opts{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin:6px 0 10px;font-size:15px}
+.opts label{display:flex;gap:8px;align-items:center}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:0 18px;margin:12px 0}
+.read>div{padding:8px 0;border-top:1px solid var(--line)}
+.read dt{font-size:14px;color:var(--muted)}
+.read dd{margin:0;font:800 23px/1.2 "Bricolage Grotesque",system-ui,sans-serif}
+.read dd small{font:400 14px "Atkinson Hyperlegible",system-ui,sans-serif}
+.big{font:800 64px/1 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.03em}
+.big small{font:600 22px "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:0;color:var(--muted)}
+.note{border-left:4px solid var(--blue);background:var(--blue-soft);padding:10px 14px;border-radius:0 6px 6px 0;margin:12px 0;font-size:15px}
+.note.warn{border-color:var(--orange);background:var(--orange-soft)}
+.note.good{border-color:var(--good)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:9px 10px;border-top:1px solid var(--line);white-space:nowrap}
+th{font-weight:700;color:var(--muted);border-top:0}
+tr.pick{cursor:pointer}
+tr.pick[aria-selected="true"]{background:var(--blue-soft)}
+.step{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;padding:16px 0;border-top:1px solid var(--line)}
+.badge{width:30px;height:30px;border-radius:50%;background:var(--blue);color:var(--on-blue);display:grid;place-items:center;font:800 15px "Bricolage Grotesque",system-ui,sans-serif}
+.step h3{margin:0 0 2px;font-size:18px}
+.step .why{color:var(--muted);font-size:15px;margin-bottom:6px}
+.eq{overflow-x:auto;padding:6px 0}
+.eq div{white-space:normal;overflow-wrap:anywhere;font-size:15px;line-height:1.6;padding:2px 0}
+.res{font:700 19px/1.3 "Bricolage Grotesque",system-ui,sans-serif;margin-top:4px}
+.ctl{display:grid;gap:10px;margin:12px 0}
+.ctl .row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center}
+.ctl .row label{font-weight:700;font-size:15px}
+.ctl .row output{font:800 17px "Bricolage Grotesque",system-ui,sans-serif}
+.ctl .row input[type=range]{grid-column:1/-1}
+.field{display:grid;gap:4px;margin:10px 0}
+.field label{font-weight:700;font-size:15px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0 14px}
+details{border-top:1px solid var(--line);padding:10px 0}
+summary{cursor:pointer;font-weight:700}
+.q{margin:14px 0 4px}
+fieldset{border:1px solid var(--line);border-radius:6px;padding:6px 14px 10px;margin:12px 0}
+legend{font-weight:700;padding:0 6px}
+.mode{display:grid;grid-template-columns:24px minmax(0,1fr);gap:6px;padding:9px 0;border-top:1px solid var(--line);align-items:start}
+.mode:first-of-type{border-top:0}
+.mode input[type=radio]{margin:4px 0 0;accent-color:var(--blue);width:18px;height:18px}
+.mode small{display:block;color:var(--muted);font-size:14px}
+.mspd{font:800 16px "Bricolage Grotesque",system-ui,sans-serif;color:var(--blue);margin-left:6px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px;color:var(--muted);margin:6px 0}
+.legend i{display:inline-block;width:18px;height:0;border-top:3px solid;vertical-align:middle;margin-right:6px}
+.legend i.dot{width:9px;height:9px;border-radius:50%;border:0;background:var(--orange);margin-right:7px}
+.legend i.dash{border-top-style:dashed}
+.shotrow{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line)}
+.shotrow b{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:18px}
+.tabs{position:fixed;left:0;right:0;bottom:0;max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);background:var(--panel);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:30}
+.tabs button{border:0;background:none;color:var(--muted);font:inherit;font-weight:700;font-size:15px;min-height:56px;cursor:pointer;border-top:4px solid transparent}
+.tabs button.on{color:var(--blue);border-top-color:var(--blue)}
+@media (max-width:520px){.top{padding:8px 16px 6px}.top p{display:none}h1{font-size:22px}.beam{margin:6px 0 8px}.big{font-size:56px}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>Crossbow Lab</h1>
+    <p>A Lego Technic bolt, measured frame by frame from slow-motion video.</p>
+    <div class="beam" aria-hidden="true"></div>
+    <div class="chips" id="chips" role="group" aria-label="Choose a shot"></div>
+  </div>
+</header>
+
+<main>
+  <section id="tab-replay" class="tab on" aria-label="Replay">
+    <p class="lede" id="rp-lede"></p>
+    <div class="stage"><canvas id="rp-cv" data-aspect="2.3" role="img" aria-label="Animated replay of the bolt flying past the yardstick"></canvas></div>
+    <div class="bar">
+      <button class="btn primary" id="rp-play" type="button">Play</button>
+      <input type="range" id="rp-scrub" min="0" max="1000" value="0" aria-label="Scrub through the frames">
+    </div>
+    <div class="opts">
+      <label>Speed
+        <select id="rp-speed">
+          <option value="1">Real time</option>
+          <option value="0.1">1/10</option>
+          <option value="0.05" selected>1/20</option>
+          <option value="0.01">1/100</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="rp-vec" checked> Show velocity arrows</label>
+    </div>
+    <dl class="read" id="rp-read"></dl>
+    <p class="small" id="rp-note"></p>
+    <div class="legend"><span><i class="dot"></i>measured position</span><span><i style="border-color:var(--blue)" class="dash"></i>fitted path</span><span><i style="border-color:var(--blue)"></i>v<sub>x</sub> arrow</span><span><i style="border-color:var(--orange)"></i>v<sub>y</sub> arrow (stretched when small)</span></div>
+  </section>
+
+  <section id="tab-results" class="tab" aria-label="Results"></section>
+
+  <section id="tab-math" class="tab" aria-label="Math">
+    <h2>The math, step by step</h2>
+    <p class="lede">Every number on this page comes from these steps. Switch the scale and watch the speed move.</p>
+    <fieldset id="mode-box"></fieldset>
+    <div class="fields">
+      <div class="field"><label for="wi-fps">Recording frame rate (fps)</label><input type="number" id="wi-fps" inputmode="decimal" step="1" min="1"></div>
+    </div>
+    <div class="bar"><button class="btn" id="wi-reset" type="button">Reset to measured values</button></div>
+    <div id="math-steps"></div>
+    <h3>Try it yourself</h3>
+    <p class="small">These use your bolt’s real numbers. Work each one out, then open the answer.</p>
+    <div id="math-try"></div>
+    <h3>Check it with a table drop</h3>
+    <p class="small">Fire level off a table, then measure how high the bolt started and how far from the table it landed. This gives a second, camera-free speed to compare with the video.</p>
+    <div class="fields">
+      <div class="field"><label for="dr-h">Height above floor (m)</label><input type="number" id="dr-h" inputmode="decimal" step="0.01" min="0.05" value="0.8"></div>
+      <div class="field"><label for="dr-d">Distance landed (m)</label><input type="number" id="dr-d" inputmode="decimal" step="0.01" min="0" placeholder="e.g. 3.1"></div>
+    </div>
+    <div id="dr-out" class="note" aria-live="polite">Enter the distance to see the speed.</div>
+  </section>
+
+  <section id="tab-simulate" class="tab" aria-label="Simulate">
+    <h2>Launch simulator</h2>
+    <p class="lede">Change anything and the path updates. “Use shot values” starts from what the video measured.</p>
+    <div class="stage"><canvas id="sim-cv" data-aspect="1.9" role="img" aria-label="Simulated bolt path"></canvas></div>
+    <div class="bar">
+      <button class="btn primary" id="sim-fire" type="button">Fire</button>
+      <button class="btn" id="sim-use" type="button">Use shot values</button>
+      <label class="small" style="margin-left:auto;display:flex;gap:6px;align-items:center">Speed
+        <select id="sim-speed"><option value="1">Real time</option><option value="0.2" selected>1/5</option><option value="0.05">1/20</option></select>
+      </label>
+    </div>
+    <div class="ctl" id="sim-ctl"></div>
+    <div class="opts">
+      <label><input type="checkbox" id="sim-equal" checked> True scale (same units on both axes, so angles look right)</label>
+      <label><input type="checkbox" id="sim-nodrag" checked> Show path with no air</label>
+      <label><input type="checkbox" id="sim-meas" checked> Show what the video measured</label>
+    </div>
+    <dl class="read" id="sim-read"></dl>
+    <div class="note" id="sim-test"></div>
+    <h3>Match the drag to a real landing</h3>
+    <p class="small">The video only covers about the first metre, so it can’t see what the air does later (a tumbling bolt drags far more). Measure where a real shot lands and the page works out the drag that explains it. It uses the speed, angle and height set above.</p>
+    <div class="fields">
+      <div class="field"><label for="sim-land">Landing distance from the crossbow (m)</label><input type="number" id="sim-land" inputmode="decimal" step="0.01" min="0.1" placeholder="e.g. 5.19"></div>
+      <div class="field"><label for="sim-gap">Gap from the crossbow to where tracking starts (m)</label><input type="number" id="sim-gap" inputmode="decimal" step="0.01" min="0" value="0.07"></div>
+    </div>
+    <div class="bar"><button class="btn" id="sim-cal" type="button">Match drag to this landing</button></div>
+    <div id="sim-cal-out" class="note" aria-live="polite" hidden></div>
+    <h3>Which angle goes farthest?</h3>
+    <div class="stage"><canvas id="sim-rng" data-aspect="2" role="img" aria-label="Range against launch angle"></canvas></div>
+    <p class="small" id="sim-rng-note"></p>
+  </section>
+
+  <section id="tab-data" class="tab" aria-label="Data">
+    <h2>Your shots</h2>
+    <p class="small" id="data-status"></p>
+    <div id="data-list"></div>
+    <h3>Add a shot</h3>
+    <p class="small">Send new videos to Claude in the chat and they appear here on their own. To add one by hand, paste the contents of the tracker’s CSV file.</p>
+    <div class="fields">
+      <div class="field"><label for="ad-label">Name</label><input type="text" id="ad-label" maxlength="40" placeholder="Shot 2"></div>
+      <div class="field"><label for="ad-fps">Recording fps</label><input type="number" id="ad-fps" value="240" min="1" step="1"></div>
+      <div class="field"><label for="ad-angle">Aimed at (degrees, optional)</label><input type="number" id="ad-angle" step="0.5" placeholder="0 for level"></div>
+      <div class="field"><label for="ad-twists">Band twists (optional)</label><input type="number" id="ad-twists" step="1" min="0"></div>
+    </div>
+    <div class="field"><label for="ad-land">Measured landing distance (m, optional)</label><input type="number" id="ad-land" step="0.01" min="0" placeholder="e.g. 5.19"></div>
+    <div class="opts"><label><input type="checkbox" id="ad-plane"> The scale reference was in the bolt’s own flight path</label></div>
+    <div class="field"><label for="ad-csv">Tracker CSV</label><textarea id="ad-csv" spellcheck="false" placeholder="frame,t_ms,x_mm,height_mm&#10;0,0.0,0.0,0.0&#10;1,4.17,47.0,3.6"></textarea></div>
+    <div class="bar"><button class="btn primary" id="ad-go" type="button">Add shot</button></div>
+    <p id="ad-msg" class="small" role="status"></p>
+    <h3>Export</h3>
+    <div class="bar" id="dl-bar">
+      <button class="btn" id="dl-sum" type="button">Download results</button>
+      <button class="btn" id="dl-pts" type="button">Download tracked points</button>
+    </div>
+    <p class="small">Speeds come from the bolt’s position in each frame, converted with the yardstick. The frame-rate check uses gravity as a second opinion.</p>
+  </section>
+</main>
+
+<nav class="tabs" id="tabs" aria-label="Sections">
+  <button type="button" data-t="replay" class="on" aria-selected="true">Replay</button>
+  <button type="button" data-t="results" aria-selected="false">Results</button>
+  <button type="button" data-t="math" aria-selected="false">Math</button>
+  <button type="button" data-t="simulate" aria-selected="false">Simulate</button>
+  <button type="button" data-t="data" aria-selected="false">Data</button>
+</nav>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var cssMemo={};
+var css=function(n){var v=cssMemo[n];if(v===undefined){v=cssMemo[n]=getComputedStyle(document.documentElement).getPropertyValue(n).trim()}return v};
+
+//#MATH-START
+var G0=9.81;
+function f(v,d){if(d==null)d=2;return Number.isFinite(v)?v.toFixed(d).replace('-','\u2212'):'\u2013'}
+function polyfit(x,y,d){
+  var m=d+1,A=[],i,r,c,k;
+  for(i=0;i<m;i++){A.push(new Array(m+1).fill(0))}
+  for(i=0;i<x.length;i++){
+    var pw=[1];for(k=1;k<=2*d;k++)pw[k]=pw[k-1]*x[i];
+    for(r=0;r<m;r++){for(c=0;c<m;c++)A[r][c]+=pw[r+c];A[r][m]+=pw[r]*y[i]}
+  }
+  for(i=0;i<m;i++){
+    var p=i;for(r=i+1;r<m;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;
+    var tmp=A[i];A[i]=A[p];A[p]=tmp;
+    for(r=i+1;r<m;r++){var fct=A[r][i]/A[i][i];for(c=i;c<=m;c++)A[r][c]-=fct*A[i][c]}
+  }
+  var co=new Array(m).fill(0);
+  for(i=m-1;i>=0;i--){var s=A[i][m];for(var j=i+1;j<m;j++)s-=A[i][j]*co[j];co[i]=s/A[i][i]}
+  return co;
+}
+function pv(c,x){var s=0;for(var i=0;i<c.length;i++)s+=c[i]*Math.pow(x,i);return s}
+function mean(a){return a.reduce(function(s,v){return s+v},0)/a.length}
+function sd(a){if(a.length<2)return NaN;var m=mean(a);return Math.sqrt(a.reduce(function(s,v){return s+(v-m)*(v-m)},0)/(a.length-1))}
+function gauss(A,b){
+  var n=b.length,M=A.map(function(r,i){return r.slice().concat([b[i]])}),i,j,k;
+  for(i=0;i<n;i++){
+    var p=i;for(j=i+1;j<n;j++)if(Math.abs(M[j][i])>Math.abs(M[p][i]))p=j;
+    var t=M[i];M[i]=M[p];M[p]=t;
+    if(Math.abs(M[i][i])<1e-300)return b.map(function(){return NaN});
+    for(j=i+1;j<n;j++){var f2=M[j][i]/M[i][i];for(k=i;k<=n;k++)M[j][k]-=f2*M[i][k]}
+  }
+  var x=new Array(n).fill(0);
+  for(i=n-1;i>=0;i--){var s=M[i][n];for(j=i+1;j<n;j++)s-=M[i][j]*x[j];x[i]=s/M[i][i]}
+  return x;
+}
+function dot(a,b){var s=0;for(var i=0;i<a.length;i++)s+=a[i]*b[i];return s}
+function traj(v0,th,k,nmax,fps){
+  var sub=8,dt=1/fps/sub,x=0,h=0,vx=v0*Math.cos(th),vy=v0*Math.sin(th),X=[0],H=[0],i,j;
+  function a(ux,uy){var s=Math.sqrt(ux*ux+uy*uy);return [-k*s*ux,-G0-k*s*uy]}
+  for(i=0;i<nmax;i++){
+    for(j=0;j<sub;j++){
+      var a1=a(vx,vy),v2x=vx+a1[0]*dt/2,v2y=vy+a1[1]*dt/2,a2=a(v2x,v2y),v3x=vx+a2[0]*dt/2,v3y=vy+a2[1]*dt/2,a3=a(v3x,v3y),v4x=vx+a3[0]*dt,v4y=vy+a3[1]*dt,a4=a(v4x,v4y);
+      x+=dt/6*(vx+2*v2x+2*v3x+v4x);h+=dt/6*(vy+2*v2y+2*v3y+v4y);
+      vx+=dt/6*(a1[0]+2*a2[0]+2*a3[0]+a4[0]);vy+=dt/6*(a1[1]+2*a2[1]+2*a3[1]+a4[1]);
+    }
+    X.push(x);H.push(h);
+  }
+  return {X:X,H:H};
+}
+function lm(fn,p0,lo,hi,steps,iter){
+  var p=p0.slice(),r=fn(p),c=dot(r,r),lam=0.01,m=p.length,stall=0;
+  function jac(q){
+    var cols=[];
+    for(var j=0;j<m;j++){
+      var a=q.slice(),b=q.slice();a[j]=Math.min(hi[j],q[j]+steps[j]);b[j]=Math.max(lo[j],q[j]-steps[j]);
+      var ra=fn(a),rb=fn(b),d=(a[j]-b[j])||1e-12;cols.push(ra.map(function(v,i){return (v-rb[i])/d}));
+    }
+    return cols;
+  }
+  for(var it=0;it<iter;it++){
+    var cols=jac(p),A=[],g=[],a,b,i;
+    for(a=0;a<m;a++){A.push(new Array(m).fill(0));for(b=0;b<m;b++)A[a][b]=dot(cols[a],cols[b]);g.push(dot(cols[a],r))}
+    var improved=false;
+    for(var tries=0;tries<14;tries++){
+      var act=p.map(function(){return false}),d,pass,j2;
+      for(pass=0;pass<=m;pass++){
+        var M=A.map(function(row,ai){var rr=row.slice();rr[ai]+=lam*(row[ai]||1e-9);return rr}),rhs=g.map(function(v){return -v});
+        for(j2=0;j2<m;j2++)if(act[j2]){for(var z=0;z<m;z++){M[j2][z]=0;M[z][j2]=0}M[j2][j2]=1;rhs[j2]=0}
+        d=gauss(M,rhs);
+        var added=false;
+        for(j2=0;j2<m;j2++)if(!act[j2]&&((p[j2]<=lo[j2]+1e-12&&d[j2]<0)||(p[j2]>=hi[j2]-1e-12&&d[j2]>0))){act[j2]=true;added=true}
+        if(!added)break;
+      }
+      var q=p.map(function(v,j){return Math.min(hi[j],Math.max(lo[j],v+d[j]))}),rq=fn(q),cq=dot(rq,rq);
+      if(Number.isFinite(cq)&&cq<c){
+        stall=(c-cq)/Math.max(c,1e-30)<1e-11?stall+1:0;
+        p=q;r=rq;c=cq;lam=Math.max(1e-7,lam/3);improved=true;if(stall>=4)it=iter;break;
+      }
+      lam*=4;
+    }
+    if(!improved)break;
+  }
+  return {p:p,r:r,cost:c,cols:jac(p)};
+}
+var FITCACHE={};
+function fitFull(s,fps,sx,sy){
+  var U=s.pts.filter(function(q){return q[3]});
+  if(U.length<8)return null;
+  var key=JSON.stringify([U,fps,s.scale,s.inPlane?1:0,sx,sy]);
+  if(FITCACHE[key]!==undefined)return FITCACHE[key];
+  var n0=U[0][0],N=U.length,n=U.map(function(q){return Math.round(q[0]-n0)}),X=U.map(function(q){return q[1]}),Y=U.map(function(q){return q[2]});
+  var dir=(polyfit(n,X,1)[1]>=0)?1:-1,nmax=Math.max.apply(null,n),sp=s.inPlane?0.02:0.12,sr=s.scale;
+  var D={n:n,X:X,Y:Y,mX:mean(X),mY:mean(Y),dir:dir,nmax:nmax,fps:fps,sr:sr,sx:sx,sy:sy,sp:sp};
+  function res(p){
+    var tr=traj(p[0],p[1]*Math.PI/180,p[2],D.nmax,D.fps),sc=p[3]*D.sr*1000,xm=[],ym=[],i;
+    for(i=0;i<N;i++){xm.push(D.dir*sc*tr.X[D.n[i]]);ym.push(-sc*tr.H[D.n[i]])}
+    var mx=mean(xm),my=mean(ym),r=[];
+    for(i=0;i<N;i++)r.push(((xm[i]-mx)-(D.X[i]-D.mX))/D.sx);
+    for(i=0;i<N;i++)r.push(((ym[i]-my)-(D.Y[i]-D.mY))/D.sy);
+    r.push((p[3]-1)/D.sp);
+    return r;
+  }
+  var bx=polyfit(n,X,1),by=polyfit(n,Y,2),v0=Math.hypot(Math.abs(bx[1]),-by[1])*fps/1000/sr,th0=Math.atan2(-by[1],Math.abs(bx[1]))*180/Math.PI;
+  var out=null;
+  try{
+    var rlo=s.inPlane?0.85:1,rhi=s.inPlane?1.15:1.5,R=lm(res,[v0,th0,0.02,Math.max(rlo,1)],[0.5,-30,0,rlo],[60,85,0.5,rhi],[0.01,0.02,0.002,0.002],250);
+    var m=4,JTJ=[],i,j;
+    for(i=0;i<m;i++){JTJ.push([]);for(j=0;j<m;j++)JTJ[i].push(dot(R.cols[i],R.cols[j]))}
+    var dof=Math.max(1,2*N+1-2-m),chi2=R.cost/dof,inv=[];
+    for(j=0;j<m;j++){var e=new Array(m).fill(0);e[j]=1;inv.push(gauss(JTJ,e))}
+    var sc2=Math.max(1,chi2),se=[0,1,2,3].map(function(q){return Math.sqrt(Math.abs(inv[q][q])*sc2)});
+    if(R.p.every(Number.isFinite)&&se.every(Number.isFinite))out={v0:R.p[0],th:R.p[1],k:R.p[2],rho:R.p[3],seV0:se[0],seTh:se[1],seK:se[2],seRho:se[3],chi2:chi2,N:N,sp:sp};
+  }catch(e){out=null}
+  FITCACHE[key]=out;return out;
+}
+function analyze(s,o){
+  o=o||{};
+  var fps=o.fps||s.fps,dt=1/fps;
+  var U=s.pts.filter(function(p){return p[3]});
+  if(U.length<5)return null;
+  var n0=U[0][0];
+  var n=U.map(function(p){return p[0]-n0}),X=U.map(function(p){return p[1]}),Y=U.map(function(p){return p[2]});
+  var bx=polyfit(n,X,1),by=polyfit(n,Y,2);
+  var dir=bx[1]>=0?1:-1,a2=by[2];
+  var sr=s.scale,sg=a2>0?2*a2*fps*fps/(G0*1000):NaN;
+  var N0=n.length,nbar0=mean(n);
+  var rxs0=Math.sqrt(X.reduce(function(s2,v,i){var e=v-pv(bx,n[i]);return s2+e*e},0)/Math.max(1,N0-2));
+  var rys0=Math.sqrt(Y.reduce(function(s2,v,i){var e=v-pv(by,n[i]);return s2+e*e},0)/Math.max(1,N0-3));
+  var fit=fitFull(s,fps,Math.max(2,rxs0),Math.max(0.8,3*rys0));
+  var mode=o.mode||'fit',sc;
+  if(mode==='custom'&&o.scale>0)sc=o.scale;
+  else if(mode==='gravity'&&Number.isFinite(sg))sc=sg;
+  else if(mode==='fit'&&fit)sc=fit.rho*sr;
+  else{sc=sr;if(mode==='custom'||mode==='gravity'||mode==='fit')mode='ruler'}
+  var kk=fps/1000,vpx=Math.abs(bx[1]),vypx=-by[1];
+  var mmpf=vpx/sc,vx=vpx/sc*kk,vy0=vypx/sc*kk,speed=Math.hypot(vx,vy0),angle=Math.atan2(vypx,vpx)*180/Math.PI;
+  var napex=NaN,rise=NaN;
+  if(a2>0){napex=-by[1]/(2*a2);if(napex>0){rise=(pv(by,0)-pv(by,napex))/sc}else{napex=NaN}}
+  var N=n.length,nbar=mean(n),sxx=n.reduce(function(s2,v){return s2+(v-nbar)*(v-nbar)},0);
+  var rxs=Math.sqrt(X.reduce(function(s2,v,i){var e=v-pv(bx,n[i]);return s2+e*e},0)/Math.max(1,N-2));
+  var rys=Math.sqrt(Y.reduce(function(s2,v,i){var e=v-pv(by,n[i]);return s2+e*e},0)/Math.max(1,N-3));
+  var seV=rxs/Math.sqrt(sxx)/sc*kk,statRel=seV/vx;
+  var speedR=Math.hypot(vpx,vypx)*kk/sr,speedG=Number.isFinite(sg)?Math.hypot(vpx,vypx)*kk/sg:NaN;
+  var gmeas=2*a2*fps*fps/(sc*1000),lo,hi,tight=Math.hypot(statRel,0.02);
+  if(mode==='fit'&&fit){var rl=s.inPlane?0.85:1,rLo=Math.max(rl,fit.rho-fit.seRho),rHi=fit.rho+fit.seRho,tt=Math.hypot(statRel,0.02);lo=speed*(fit.rho/rHi)*(1-tt);hi=speed*(fit.rho/rLo)*(1+tt)}
+  else if(!s.inPlane&&Number.isFinite(speedG)&&mode!=='custom'){lo=Math.min(speedR,speedG);hi=Math.max(speedR,speedG)}
+  else{lo=speed*(1-tight);hi=speed*(1+tight)}
+  return {fit:fit,fps:fps,sc:sc,dt:dt,mode:mode,n0:n0,n:n,X:X,Y:Y,bx:bx,by:by,a2:a2,dir:dir,mmpf:mmpf,vx:vx,vy0:vy0,speed:speed,angle:angle,
+    napex:napex,rise:rise,tApex:napex/fps,rxs:rxs,rys:rys,seV:seV,statRel:statRel,sr:sr,sg:sg,speedR:speedR,speedG:speedG,gmeas:gmeas,
+    lo:lo,hi:hi,pm:(hi-lo)/2,span:Math.abs(X[N-1]-X[0])/sc,T:n[N-1]/fps,count:N,
+    vyAt:function(nn){return -(by[1]+2*a2*nn)/sc*kk}};
+}
+function simulate(p){
+  var g=p.g||G0,k=p.k||0,th=p.ang*Math.PI/180,vy00=p.v*Math.sin(th),est=Math.max(0.05,(vy00+Math.sqrt(vy00*vy00+2*g*Math.max(0,p.h)))/g),dt=p.dt||Math.min(0.01,Math.max(0.0005,est/3000));
+  var x=0,y=p.h,vx=p.v*Math.cos(th),vy=p.v*Math.sin(th),t=0,step=0,every=Math.max(1,Math.round(0.002/dt));
+  var out=[[0,x,y,vx,vy]],apex={x:0,y:y,t:0};
+  function acc(a,b){var s=Math.hypot(a,b);return [-k*s*a,-g-k*s*b]}
+  while(t<60){
+    var a1=acc(vx,vy),mvx=vx+a1[0]*dt/2,mvy=vy+a1[1]*dt/2,a2=acc(mvx,mvy);
+    var nx=x+mvx*dt,ny=y+mvy*dt,nvx=vx+a2[0]*dt,nvy=vy+a2[1]*dt;
+    if(ny<0){
+      var fr=y/(y-ny),ix=x+(nx-x)*fr,it=t+dt*fr,ivx=vx+(nvx-vx)*fr,ivy=vy+(nvy-vy)*fr;
+      out.push([it,ix,0,ivx,ivy]);x=ix;y=0;t=it;vx=ivx;vy=ivy;break;
+    }
+    x=nx;y=ny;vx=nvx;vy=nvy;t+=dt;step++;
+    if(y>apex.y)apex={x:x,y:y,t:t};
+    if(step%every===0)out.push([t,x,y,vx,vy]);
+  }
+  return {pts:out,T:t,range:x,apex:apex,impact:Math.hypot(vx,vy)};
+}
+function parseTrackCsv(text){
+  var rows=String(text).trim().split(/\r?\n/).map(function(l){return l.split(/[,\t;]/).map(function(s){return s.trim()})}).filter(function(r){return r.length>=3});
+  var out=[];
+  rows.forEach(function(r){var nums=r.map(Number);if(nums.every(Number.isFinite))out.push(nums)});
+  if(out.length<6)return {error:'Need at least 6 rows of numbers: frame, t_ms, x_mm, height_mm.'};
+  var four=out[0].length>=4,base=out[0][0];
+  var pts=out.map(function(r){var x=four?r[2]:r[1],h=four?r[3]:r[2];return [r[0]-base,40+x,-(20+h),1]});
+  return {pts:pts};
+}
+//#MATH-END
+
+var SEED=[{id:'s1',order:1,label:'Shot 1',fps:240,scale:1.0236,ruler:[694,1630],rulerY:549,setupAngle:null,twists:null,
+  inPlane:false,note:'First level shot from the 36 in yardstick setup.',video:'IMG_4037_1.mov',
+  pts:[[-1,708.8,528.6,0],[0,738.4,526.4,1],[1,785.2,522.8,1],[2,836.8,519.2,1],[3,882.4,516.2,1],[4,934.1,513.2,1],[5,980.3,510.3,1],[6,1030.2,507.8,1],[7,1074.7,505.5,1],[8,1125.8,503.3,1],[9,1180.5,501.4,1],[10,1225.0,499.4,1],[11,1271.2,497.7,1],[12,1320.4,496.3,1],[13,1365.5,495.0,1],[14,1414.9,494.1,1],[15,1461.1,493.4,1],[16,1510.4,492.9,1],[17,1556.7,492.7,1],[18,1604.9,492.6,1],[19,1649.6,492.6,1],[20,1688.6,491.6,0],[21,1710.0,488.8,0]]}];
+
+var S={shots:SEED.slice(),sel:'s1',tab:'replay',db:null,dbOn:false,dbDocs:[],canWrite:null,local:[],sig:'',started:false,
+  rp:{t:0,playing:false,speed:0.05,last:0,vec:true,tok:null},
+  sim:{v:11.3,ang:4.4,h:0.2,k:0.05,g:9.81,equal:true,landFor:null,nodrag:true,meas:true,anim:null,speed:0.2,res:null,res0:null},
+  wi:{fps:null,scale:null},mode:'fit',delArm:null};
+function AN(s){return analyze(s,{fps:S.wi.fps||s.fps,mode:S.mode,scale:S.wi.scale})}
+try{var raw=localStorage.getItem('crossbow.local');if(raw){var arr=JSON.parse(raw);if(Array.isArray(arr))S.local=arr.map(function(d){return cleanDoc(d.id,d)}).filter(Boolean)}}catch(e){}
+function persistLocal(){try{localStorage.setItem('crossbow.local',JSON.stringify(S.local))}catch(e){}}
+function cur(){return S.shots.filter(function(s){return s.id===S.sel})[0]||S.shots[0]}
+function cleanDoc(id,d){
+  if(!d||!Array.isArray(d.pts))return null;
+  var pts=d.pts.filter(function(p){return Array.isArray(p)&&p.length>=3&&[p[0],p[1],p[2]].every(function(v){return Number.isFinite(Number(v))})}).map(function(p){return [Number(p[0]),Number(p[1]),Number(p[2]),p[3]?1:0]});
+  if(pts.length<3)return null;
+  var r=Array.isArray(d.ruler)&&d.ruler.length===2&&d.ruler.every(function(v){return Number.isFinite(Number(v))})?d.ruler.map(Number):null;
+  return {id:String(id),order:Number(d.order)||0,label:String(d.label||id).slice(0,40),fps:Number(d.fps)>0?Number(d.fps):240,scale:Number(d.scale)>0?Number(d.scale):1,
+    ruler:r,rulerY:Number.isFinite(Number(d.rulerY))&&d.rulerY!==null?Number(d.rulerY):null,
+    setupAngle:d.setupAngle!==null&&d.setupAngle!==undefined&&Number.isFinite(Number(d.setupAngle))?Number(d.setupAngle):null,
+    twists:d.twists!==null&&d.twists!==undefined&&Number.isFinite(Number(d.twists))?Number(d.twists):null,
+    inPlane:d.inPlane===true,landing:d.landing!==null&&d.landing!==undefined&&Number.isFinite(Number(d.landing))&&Number(d.landing)>0?Number(d.landing):null,note:String(d.note||'').slice(0,300),video:String(d.video||'').slice(0,80),pts:pts};
+}
+
+/* ---------- canvas helpers ---------- */
+function setup(cv){
+  var dpr=Math.min(window.devicePixelRatio||1,2),w=cv.clientWidth||320,asp=parseFloat(cv.dataset.aspect)||2,hh=Math.round(w/asp),pw=Math.round(w*dpr),ph=Math.round(hh*dpr);
+  if(cv.width!==pw||cv.height!==ph){cv.width=pw;cv.height=ph}
+  if(cv.style.height!==hh+'px')cv.style.height=hh+'px';
+  var ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,hh);
+  ctx.font='13px "Atkinson Hyperlegible",system-ui,sans-serif';
+  return {ctx:ctx,W:w,H:hh};
+}
+function ticks(a,b,n){
+  var span=b-a;if(!(span>0))return {out:[a],st:1};
+  var raw=span/n,mag=Math.pow(10,Math.floor(Math.log10(raw))),r=raw/mag,st=(r<1.5?1:r<3?2:r<7?5:10)*mag,out=[];
+  for(var v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)out.push(+v.toFixed(10));
+  return {out:out,st:st};
+}
+function fmtT(v,st){var d=Math.max(0,-Math.floor(Math.log10(st)+1e-9));return v.toFixed(d).replace('-','\u2212')}
+function chart(cv,o){
+  var s=setup(cv),ctx=s.ctx,W=s.W,H=s.H;
+  var m={l:o.ml||54,r:14,t:12,b:o.xlabel?40:26},pw=W-m.l-m.r,ph=H-m.t-m.b;
+  var xmin=o.xmin,xmax=o.xmax,ymin=o.ymin,ymax=o.ymax;
+  if(o.equal){var need=(ymax-ymin)*pw/ph,xs=Math.max(xmax-xmin,need);xmax=xmin+xs;ymax=ymin+xs*ph/pw}
+  var X=function(v){return m.l+(v-xmin)/(xmax-xmin)*pw},Y=function(v){return m.t+ph-(v-ymin)/(ymax-ymin)*ph};
+  var tx=ticks(xmin,xmax,Math.max(2,Math.round(pw/80))),ty=ticks(ymin,ymax,Math.max(2,Math.round(ph/46)));
+  ctx.lineWidth=1;ctx.strokeStyle=css('--line');ctx.fillStyle=css('--muted');
+  ctx.textAlign='center';ctx.textBaseline='top';
+  tx.out.forEach(function(v){var x=X(v);ctx.beginPath();ctx.moveTo(x,m.t);ctx.lineTo(x,m.t+ph);ctx.stroke();ctx.fillText(fmtT(v,tx.st),x,m.t+ph+5)});
+  ctx.textAlign='right';ctx.textBaseline='middle';
+  ty.out.forEach(function(v){var y=Y(v);ctx.beginPath();ctx.moveTo(m.l,y);ctx.lineTo(m.l+pw,y);ctx.stroke();ctx.fillText(fmtT(v,ty.st),m.l-6,y)});
+  ctx.fillStyle=css('--muted');ctx.textAlign='center';ctx.textBaseline='bottom';
+  if(o.xlabel)ctx.fillText(o.xlabel,m.l+pw/2,H-3);
+  if(o.ylabel){ctx.save();ctx.translate(13,m.t+ph/2);ctx.rotate(-Math.PI/2);ctx.textBaseline='top';ctx.fillText(o.ylabel,0,-3);ctx.restore()}
+  if(ymin<=0&&ymax>=0){ctx.strokeStyle=css('--muted');ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(m.l,Y(0));ctx.lineTo(m.l+pw,Y(0));ctx.stroke()}
+  ctx.save();ctx.beginPath();ctx.rect(m.l,m.t,pw,ph);ctx.clip();
+  o.draw(ctx,X,Y,{pw:pw,ph:ph,m:m,W:W,H:H});
+  ctx.restore();
+  return {X:X,Y:Y,ctx:ctx};
+}
+function line(ctx,X,Y,pts,color,w,dash){
+  if(pts.length<2)return;ctx.save();ctx.strokeStyle=color;ctx.lineWidth=w||2;ctx.setLineDash(dash||[]);ctx.beginPath();
+  pts.forEach(function(p,i){i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1]))});ctx.stroke();ctx.restore();
+}
+function dots(ctx,X,Y,pts,color,r){ctx.fillStyle=color;pts.forEach(function(p){ctx.beginPath();ctx.arc(X(p[0]),Y(p[1]),r||3.5,0,6.2832);ctx.fill()})}
+function rrect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath()}
+function drawBolt(ctx,x,y,len,th,ang,alpha){
+  ctx.save();ctx.translate(x,y);ctx.rotate(ang);ctx.globalAlpha=alpha==null?1:alpha;
+  rrect(ctx,-len/2,-th/2,len,th,th/2);ctx.fillStyle=css('--bolt');ctx.fill();
+  ctx.strokeStyle=css('--bolt-edge');ctx.lineWidth=1;ctx.stroke();ctx.restore();
+}
+function arrow(ctx,x0,y0,x1,y1,color){
+  var dx=x1-x0,dy=y1-y0,L=Math.hypot(dx,dy);if(L<1)return;
+  ctx.save();ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+  var a=Math.atan2(dy,dx),h=Math.min(9,L*0.6);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-h*Math.cos(a-0.45),y1-h*Math.sin(a-0.45));ctx.lineTo(x1-h*Math.cos(a+0.45),y1-h*Math.sin(a+0.45));ctx.closePath();ctx.fill();ctx.restore();
+}
+function legend(items){return '<div class="legend">'+items.map(function(i){return '<span><i class="'+(i.dot?'dot':(i.dash?'dash':''))+'" style="'+(i.dot?'':'border-color:'+i.c)+'"></i>'+i.t+'</span>'}).join('')+'</div>'}
+
+/* ---------- tabs ---------- */
+var TABS=['replay','results','math','simulate','data'];
+function showTab(t,push){
+  if(TABS.indexOf(t)<0)t='replay';
+  S.tab=t;S.rp.playing=false;S.sim.anim=null;
+  $$('.tab').forEach(function(e){e.classList.toggle('on',e.id==='tab-'+t)});
+  $$('#tabs button').forEach(function(b){var on=b.dataset.t===t;b.setAttribute('aria-selected',on);b.classList.toggle('on',on)});
+  if(push){try{history.replaceState(null,'','#'+t)}catch(e){}}
+  window.scrollTo(0,0);renderActive();
+}
+function renderActive(){
+  if(S.tab==='replay')rpInit();
+  else if(S.tab==='results')renderResults();
+  else if(S.tab==='math')renderMath(true);
+  else if(S.tab==='simulate')simInit();
+  else if(S.tab==='data')renderData();
+}
+function repaint(){
+  cssMemo={};
+  if(S.tab==='replay')paintReplay();
+  else if(S.tab==='results')renderResults();
+  else if(S.tab==='simulate'){simPaint(null);simRange()}
+}
+function renderChips(){
+  $('#chips').innerHTML=S.shots.map(function(s){return '<button type="button" class="chip" data-id="'+esc(s.id)+'" aria-pressed="'+(s.id===S.sel)+'">'+esc(s.label)+'</button>'}).join('');
+}
+function selectShot(id){S.sel=id;S.wi.fps=null;S.wi.scale=null;renderChips();renderActive()}
+
+/* ---------- replay ---------- */
+function rpBounds(){
+  var sh=cur(),A=sh?AN(sh):null;if(!A)return null;
+  var ns=sh.pts.map(function(p){return p[0]-A.n0});
+  return {A:A,sh:sh,min:Math.min.apply(null,ns),max:Math.max.apply(null,ns)};
+}
+function measAt(sh,A,t){
+  var P=sh.pts.map(function(p){return [p[0]-A.n0,p[1],p[2]]}).sort(function(a,b){return a[0]-b[0]});
+  if(t<=P[0][0])return {x:P[0][1],y:P[0][2]};
+  for(var i=1;i<P.length;i++){if(t<=P[i][0]){var a=P[i-1],b=P[i],u=(t-a[0])/((b[0]-a[0])||1);return {x:a[1]+(b[1]-a[1])*u,y:a[2]+(b[2]-a[2])*u}}}
+  var q=P[P.length-1];return {x:q[1],y:q[2]};
+}
+function rpInit(){
+  var b=rpBounds(),lede=$('#rp-lede');
+  S.rp.playing=false;
+  if(!b){lede.textContent='This shot has too few tracked frames to replay.';$('#rp-read').innerHTML='';paintReplay();return}
+  var A=b.A,sh=b.sh;
+  lede.textContent=sh.label+' crossed '+f(A.span/1000,2)+' m of wall in '+f(A.T*1000,0)+' ms, leaving at '+f(A.speed,1)+' m/s.';
+  S.rp.t=b.min;$('#rp-play').textContent='Play';$('#rp-scrub').value=0;
+  $('#rp-note').textContent='In real time this whole flight lasts '+f(A.T*1000,0)+' ms, less than a blink. The video plays it back much slower.';
+  paintReplay();
+  if(!S.started){S.started=true;if(!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))rpPlay()}
+}
+function rpPlay(){
+  var b=rpBounds();if(!b)return;
+  if(S.rp.t>=b.max-1e-6)S.rp.t=b.min;
+  var tok={};S.rp.tok=tok;S.rp.playing=true;S.rp.last=performance.now();$('#rp-play').textContent='Pause';
+  (function tick(now){
+    if(S.rp.tok!==tok||!S.rp.playing)return;
+    var bb=rpBounds();if(!bb)return;
+    S.rp.t+=(now-S.rp.last)/1000*S.rp.speed*bb.A.fps;S.rp.last=now;
+    if(S.rp.t>=bb.max){S.rp.t=bb.max;S.rp.playing=false;$('#rp-play').textContent='Play again'}
+    $('#rp-scrub').value=Math.round((S.rp.t-bb.min)/(bb.max-bb.min)*1000);
+    paintReplay();
+    if(S.rp.playing)requestAnimationFrame(tick);
+  })(performance.now());
+}
+var rpBG=null,rpBGKey='';
+function paintReplay(){
+  var cv=$('#rp-cv'),s=setup(cv),ctx=s.ctx,W=s.W,H=s.H,b=rpBounds();
+  if(!b){ctx.fillStyle=css('--muted');ctx.fillText('Nothing to replay yet.',12,26);return}
+  var A=b.A,sh=b.sh,t=S.rp.t,sc=sh.scale;
+  var rr=sh.ruler||[0,914.4*sc],ry=sh.rulerY==null?0:sh.rulerY,L=rr[1]-rr[0];
+  var vx0=rr[0]-0.2*L,vw=L*1.32,k=W/vw,vh=H/k,ymin=Math.min.apply(null,sh.pts.map(function(q){return q[2]})),vy0=Math.min(ry-0.46*vh,ymin-0.12*vh);
+  var cx=function(x){return (x-vx0)*k},cy=function(y){return (y-vy0)*k},mm=function(v){return v*sc*k};
+  var key=W+'x'+H+'|'+sh.id+'|'+sc+'|'+css('--wall')+css('--tan')+css('--box')+css('--beam');
+  if(rpBGKey!==key){
+    var oc=document.createElement('canvas'),dpr=Math.min(window.devicePixelRatio||1,2);oc.width=Math.round(W*dpr);oc.height=Math.round(H*dpr);
+    var drawStatic=function(ctx){
+  ctx.fillStyle=css('--wall');ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=css('--base');ctx.fillRect(0,cy(ry)+mm(27),W,mm(143));
+  ctx.fillStyle=css('--line');ctx.fillRect(0,cy(ry)+mm(27),W,1);
+  ctx.fillStyle=css('--floor');ctx.fillRect(0,cy(ry)+mm(170),W,H);
+  ctx.fillStyle=css('--door');ctx.fillRect(cx(rr[1])+mm(100),0,W,cy(ry)+mm(170));
+  // crossbow on its box
+  var bx0=cx(rr[0]);
+  ctx.fillStyle=css('--box');ctx.fillRect(bx0-mm(230),cy(ry)+mm(95),mm(380),mm(75));
+  var by0=cy(ry)-mm(26);
+  ctx.fillStyle='#10161c';[-112,-46,-8].forEach(function(dx){ctx.fillRect(bx0+mm(dx)-mm(4),by0+mm(18),mm(8),cy(ry)+mm(95)-(by0+mm(18)))});
+  ctx.fillStyle='#d11a1a';[-112,-46,-8].forEach(function(dx){ctx.fillRect(bx0+mm(dx)-mm(4),cy(ry)+mm(70),mm(8),mm(25))});
+  ctx.fillStyle=css('--beam');ctx.fillRect(bx0-mm(140),by0,mm(160),mm(20));
+  ctx.fillStyle=css('--blue');[-130,-100,-70,-40,-10].forEach(function(dx){ctx.fillRect(bx0+mm(dx)-mm(3),by0+mm(4),mm(6),mm(6))});
+  // yardstick
+  ctx.fillStyle=css('--tan');ctx.fillRect(cx(rr[0]),cy(ry)-mm(19),cx(rr[1])-cx(rr[0]),mm(38));
+  ctx.strokeStyle=css('--ruler-ink');ctx.fillStyle=css('--ruler-ink');ctx.lineWidth=1;
+  ctx.font=Math.max(9,Math.min(13,mm(12)))+'px "Atkinson Hyperlegible",system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='top';
+  for(var i=0;i<=36;i++){var x=cx(rr[0]+i*25.4*sc),maj=i%6===0;ctx.beginPath();ctx.moveTo(x,cy(ry)-mm(19));ctx.lineTo(x,cy(ry)-mm(19)+mm(maj?16:9));ctx.stroke();if(maj)ctx.fillText(String(i),x,cy(ry)-mm(19)+mm(18))}
+  ctx.font='13px "Atkinson Hyperlegible",system-ui,sans-serif';
+    };
+    var octx=oc.getContext('2d');octx.setTransform(dpr,0,0,dpr,0,0);drawStatic(octx);rpBG=oc;rpBGKey=key;
+  }
+  ctx.drawImage(rpBG,0,0,W,H);
+  // fitted path
+  ctx.save();ctx.strokeStyle=css('--blue');ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();
+  var last=A.n[A.n.length-1];
+  for(var nn=0;nn<=last;nn+=0.5){var px=cx(pv(A.bx,nn)),py=cy(pv(A.by,nn));nn?ctx.lineTo(px,py):ctx.moveTo(px,py)}
+  ctx.stroke();ctx.restore();
+  // measured points
+  var rad=Math.max(2.2,mm(3));
+  sh.pts.forEach(function(p){
+    var rel=p[0]-A.n0,x=cx(p[1]),y=cy(p[2]);ctx.beginPath();ctx.arc(x,y,rad,0,6.2832);
+    if(rel<=t+1e-6&&p[3]){ctx.fillStyle=css('--orange');ctx.fill()}else{ctx.strokeStyle=css('--orange');ctx.globalAlpha=p[3]?0.55:0.9;ctx.lineWidth=1.5;ctx.stroke();ctx.globalAlpha=1}
+  });
+  // bolt
+  var pos=measAt(sh,A,t),vxp=A.bx[1],vyp=A.by[1]+2*A.by[2]*Math.max(0,t),ang=Math.atan2(vyp,vxp);
+  var bl=mm(104),bt=Math.max(3,mm(9));
+  for(var g=4;g>=1;g--){drawBolt(ctx,cx(pos.x-vxp*0.14*g),cy(pos.y-vyp*0.14*g),bl,bt,ang,0.16)}
+  drawBolt(ctx,cx(pos.x),cy(pos.y),bl,bt,ang,1);
+  // velocity arrows
+  var vyNow=A.vyAt(Math.max(0,t));
+  if(S.rp.vec){
+    var kk=W*0.011,ky=Math.max(1,Math.min(5,2.5/Math.max(Math.abs(A.vy0),0.01))),bx=cx(pos.x),byy=Math.max(cy(pos.y)-bt*1.4,50),dirx=A.dir;
+    arrow(ctx,bx,byy,bx+dirx*A.vx*kk*0.8,byy,css('--blue'));
+    arrow(ctx,bx,byy,bx,byy-Math.min(vyNow*kk*ky,byy-24),css('--orange'));
+    ctx.fillStyle=css('--blue');ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText('vx '+f(A.vx,1)+' m/s',Math.max(8,Math.min(bx-6,W-96)),byy+6);
+  }
+  // clock
+  ctx.fillStyle=css('--panel');ctx.globalAlpha=.85;ctx.fillRect(8,8,122,26);ctx.globalAlpha=1;
+  ctx.fillStyle=css('--ink');ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('t = '+f(t/A.fps*1000,1)+' ms',16,21);
+  // readouts
+  var dist=(pos.x-A.bx[0])/A.sc*A.dir,hgt=(A.by[0]-pos.y)/A.sc;
+  var nowT=performance.now();if(S.rp.playing&&nowT-(S.rp.lastRead||0)<70)return;S.rp.lastRead=nowT;
+  $('#rp-read').innerHTML=[['Time',f(t/A.fps*1000,1),'ms'],['Distance',f(dist,0),'mm'],['Height gained',f(hgt,1),'mm'],['Horizontal speed',f(A.vx,2),'m/s'],['Vertical speed',f(vyNow,2),'m/s'],['Speed',f(Math.hypot(A.vx,vyNow),2),'m/s']].map(function(r){return '<div><dt>'+r[0]+'</dt><dd>'+r[1]+' <small>'+r[2]+'</small></dd></div>'}).join('');
+}
+
+/* ---------- results ---------- */
+function groupKey(s,A){if(s.setupAngle!=null)return String(s.setupAngle).replace('-','\u2212')+'\u00b0 aim';var a=A?A.angle:0;return Math.abs(a)<6?'Level':'About '+(Math.round(a/5)*5)+'\u00b0'}
+function renderResults(){
+  var el=$('#tab-results'),sh=cur(),A=sh?AN(sh):null;
+  if(!A){el.innerHTML='<h2>Not enough data</h2><p class="lede">This shot needs at least 5 tracked frames.</p>';return}
+  var rows=S.shots.map(function(s){return {s:s,A:AN(s)}}).filter(function(r){return r.A});
+  var h='<p class="small">'+esc(sh.label)+(sh.video?' from '+esc(sh.video):'')+'</p>';
+  h+='<div class="big">'+f(A.speed,1)+' <small>m/s</small></div><p class="small">give or take '+f(A.pm,1)+' m/s, from '+f(A.lo,1)+' to '+f(A.hi,1)+'</p>';
+  h+='<p class="lede">That is '+f(A.speed*3.6,0)+' km/h, or '+f(A.speed*2.23694,0)+' mph, at '+f(Math.abs(A.angle),1)+'\u00b0 '+(A.angle>=0?'above':'below')+' level when tracking starts.</p>';
+  h+='<dl class="read">'+[['Horizontal speed',f(A.vx,2),'m/s'],['Vertical speed at start of track',f(A.vy0,2),'m/s'],['Angle at start of track',f(A.angle,1),'\u00b0'],[(Number.isFinite(A.napex)&&A.napex>A.n[A.n.length-1])?'Predicted peak height':'Peak height gained',Number.isFinite(A.rise)?f(A.rise,0):'\u2013','mm'],[(Number.isFinite(A.napex)&&A.napex>A.n[A.n.length-1])?'Predicted time to peak':'Time to peak',Number.isFinite(A.tApex)?f(A.tApex*1000,0):'\u2013','ms'],['Tracked',f(A.span/1000,2),'m in '+f(A.T*1000,0)+' ms']].concat(A.fit?[['Air drag k',f(A.fit.k,3),'\u00b1 '+f(A.fit.seK,3)+' per m']]:[]).map(function(r){return '<div><dt>'+r[0]+'</dt><dd>'+r[1]+' <small>'+r[2]+'</small></dd></div>'}).join('')+'</dl>';
+  if(sh.inPlane){
+    h+='<div class="note good">The scale reference was in the bolt’s own path, so the speed is good to about '+f(Math.hypot(A.statRel,0.02)*100,0)+'%.</div>';
+  }else if(Number.isFinite(A.speedG)){
+    h+='<div class="note warn"><b>Scale check.</b> The yardstick gives '+f(A.speedR,1)+' m/s and gravity gives '+f(A.speedG,1)+' m/s. They disagree because the bolt flew in a different plane from the yardstick and a short track makes the gravity scale shaky.'+(A.fit?' The full fit with air drag lands on '+f(A.speed,1)+' m/s ('+f(A.lo,1)+' to '+f(A.hi,1)+'), with the scale '+f((A.fit.rho-1)*100,0)+'% above the yardstick’s.':'')+' Hold the yardstick in the bolt’s own path next time to settle it.</div>';
+  }
+  h+='<h3>Path of the bolt</h3><div class="stage"><canvas id="ch-traj" data-aspect="1.7" role="img" aria-label="Height against distance"></canvas></div>';
+  h+=legend([{dot:1,t:'measured'},{c:'var(--blue)',t:'fitted'},{c:'var(--muted)',dash:1,t:'gravity only, no air'}]);
+  h+='<p class="small">Height is stretched so the arc is easy to see, which makes angles look steeper than they are. The real bolt rose about '+(Number.isFinite(A.rise)?f(A.rise/10,1)+' cm':'a little')+' over '+f(A.span/1000,2)+' m.</p>';
+  h+='<h3>Vertical speed over time</h3><div class="stage"><canvas id="ch-vy" data-aspect="1.9" role="img" aria-label="Vertical speed against time"></canvas></div>';
+  h+=legend([{c:'var(--blue)',t:'measured'},{c:'var(--muted)',dash:1,t:'exactly 9.81 m/s\u00b2 slope'}]);
+  h+='<p class="small">The line should drop 9.81 m/s every second, and it crosses zero at the peak. Horizontal speed stays about the same.</p>';
+  h+='<h3>All shots</h3><div class="scroll"><table><thead><tr><th>Shot</th><th>Aimed at</th><th>Speed (m/s)</th><th>Angle (\u00b0)</th><th>Peak (mm)</th></tr></thead><tbody>'+rows.map(function(r){return '<tr class="pick" data-id="'+esc(r.s.id)+'" aria-selected="'+(r.s.id===sh.id)+'"><td><b>'+esc(r.s.label)+'</b></td><td>'+(r.s.setupAngle==null?'not set':f(r.s.setupAngle,1)+'\u00b0')+'</td><td>'+f(r.A.speed,2)+'</td><td>'+f(r.A.angle,1)+'</td><td>'+(Number.isFinite(r.A.rise)?f(r.A.rise,0):'\u2013')+'</td></tr>'}).join('')+'</tbody></table></div>';
+  var groups={};rows.forEach(function(r){var g=groupKey(r.s,r.A);(groups[g]=groups[g]||[]).push(r.A.speed)});
+  var gk=Object.keys(groups).filter(function(g){return groups[g].length>=2});
+  if(gk.length){
+    h+='<h3>How repeatable is it?</h3>'+gk.map(function(g){var a=groups[g],m=mean(a),d=sd(a);return '<div class="shotrow"><span><b>'+esc(g)+'</b> <small>'+a.length+' shots</small></span><span>'+f(m,2)+' \u00b1 '+f(d,2)+' m/s <small>('+f(d/m*100,1)+'% spread)</small></span></div>'}).join('');
+    h+='<div class="stage" style="margin-top:12px"><canvas id="ch-bars" data-aspect="2" role="img" aria-label="Speed of each shot"></canvas></div>';
+  }else{
+    h+='<div class="note">Fire a few more shots with the same settings and the spread between them shows up here.</div>';
+  }
+  el.innerHTML=h;
+  // charts
+  var others=rows.filter(function(r){return r.s.id!==sh.id});
+  function pathPts(a){var o=[];for(var nn=0;nn<=a.n[a.n.length-1]+1e-9;nn+=0.5)o.push([(pv(a.bx,nn)-a.bx[0])/a.sc*a.dir,(a.by[0]-pv(a.by,nn))/a.sc]);return o}
+  function idealPts(a){var o=[];for(var nn=0;nn<=a.n[a.n.length-1]+1e-9;nn+=0.5){var t=nn/a.fps;o.push([a.mmpf*nn,a.vy0*1000*t-0.5*G0*1000*t*t])}return o}
+  var mine=pathPts(A),ideal=idealPts(A),meas=A.X.map(function(x,i){return [(x-A.bx[0])/A.sc*A.dir,(A.by[0]-A.Y[i])/A.sc]});
+  var ys=mine.concat(ideal).concat(meas).map(function(p){return p[1]}),xs=mine.map(function(p){return p[0]});
+  others.forEach(function(r){pathPts(r.A).forEach(function(p){ys.push(p[1]);xs.push(p[0])})});
+  var ymin=Math.min(0,Math.floor(Math.min.apply(null,ys)-3)),ymax=Math.ceil(Math.max.apply(null,ys)*1.2+3),xmax=Math.max.apply(null,xs)*1.04;
+  chart($('#ch-traj'),{xmin:0,xmax:xmax,ymin:ymin,ymax:ymax,xlabel:'distance along the wall (mm)',ylabel:'height gained (mm)',draw:function(ctx,X,Y,g){
+    others.forEach(function(r){line(ctx,X,Y,pathPts(r.A),css('--tech')||css('--muted'),1.5)});
+    line(ctx,X,Y,ideal,css('--muted'),2,[6,5]);line(ctx,X,Y,mine,css('--blue'),2.5);dots(ctx,X,Y,meas,css('--orange'),3.6);
+    var st=Math.abs(Y(100)-Y(0))/Math.abs(X(100)-X(0));
+    ctx.fillStyle=css('--ink');ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText('Real angle at start: '+f(A.angle,1)+'\u00b0',g.m.l+8,g.m.t+6);
+    ctx.fillStyle=css('--orange');ctx.fillText('Height stretched \u00d7'+f(st,1)+', so the line looks steeper',g.m.l+8,g.m.t+24);
+  }});
+  var vp=[],vi=[],lastN=A.n[A.n.length-1];
+  for(var nn=0;nn<=lastN+1e-9;nn+=0.5){var t=nn/A.fps*1000;vp.push([t,A.vyAt(nn)]);vi.push([t,A.vy0-G0*nn/A.fps])}
+  var vv=vp.concat(vi).map(function(p){return p[1]});
+  chart($('#ch-vy'),{xmin:0,xmax:A.T*1000,ymin:Math.floor((Math.min.apply(null,vv)-0.2)*5)/5,ymax:Math.ceil((Math.max.apply(null,vv)+0.2)*5)/5,xlabel:'time (ms)',ylabel:'vertical speed (m/s)',draw:function(ctx,X,Y){
+    line(ctx,X,Y,vi,css('--muted'),2,[6,5]);line(ctx,X,Y,vp,css('--blue'),3);
+  }});
+  if(gk.length){
+    var labs=rows.map(function(r){return r.s.label}),sp=rows.map(function(r){return r.A.speed}),mn=mean(sp);
+    chart($('#ch-bars'),{xmin:0,xmax:rows.length,ymin:Math.floor(Math.min.apply(null,sp)*0.8),ymax:Math.ceil(Math.max.apply(null,sp)*1.08),xlabel:'shots in order',ylabel:'speed (m/s)',draw:function(ctx,X,Y,g){
+      rows.forEach(function(r,i){var x0=X(i+0.18),x1=X(i+0.82);ctx.fillStyle=r.s.id===sh.id?css('--blue'):css('--tech')||css('--muted');ctx.fillRect(x0,Y(r.A.speed),x1-x0,Y(0)-Y(r.A.speed))});
+      ctx.strokeStyle=css('--orange');ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(g.m.l,Y(mn));ctx.lineTo(g.m.l+g.pw,Y(mn));ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle=css('--orange');ctx.textAlign='right';ctx.textBaseline='bottom';ctx.fillText('mean '+f(mn,2),g.m.l+g.pw-4,Y(mn)-4);
+    }});
+  }
+}
+
+/* ---------- math ---------- */
+var MODES=[['fit','Best fit with air drag','Fits the whole flight at once, including air drag. The bolt flew in front of the wall, so it can only look bigger than the yardstick: the fit may raise the scale (up to about 12%) but never lowers it.'],['ruler','Yardstick on the wall','Uses the yardstick’s pixels per mm. Reads high if the bolt flew in front of the wall.'],['gravity','Calibrated by gravity','Picks the scale that makes the path bend by exactly 9.81 m/s\u00b2. Ignores air, and shifts a lot with a short track.'],['custom','My own scale','Type the pixels per mm you measured in the bolt’s own path.']];
+function modeBox(sh){
+  return '<legend>Which scale should the numbers use?</legend>'+MODES.map(function(m){
+    var dis=sh.inPlane&&m[0]==='gravity'?'':'';
+    return '<label class="mode"><input type="radio" name="mode" value="'+m[0]+'"'+(S.mode===m[0]?' checked':'')+'><span><b>'+m[1]+'</b><span class="mspd" data-m="'+m[0]+'"></span><small>'+m[2]+'</small>'+(m[0]==='custom'?'<input type="number" id="wi-scale" inputmode="decimal" step="0.001" min="0.01" aria-label="Your own scale in pixels per mm" placeholder="pixels per mm" value="'+(S.wi.scale||'')+'">':'')+'</span></label>';
+  }).join('');
+}
+function modeSpeeds(sh){
+  $$('.mspd').forEach(function(el){
+    var m=el.dataset.m;if(m==='custom'&&!(S.wi.scale>0)){el.textContent='';return}
+    var A=analyze(sh,{fps:S.wi.fps||sh.fps,mode:m,scale:S.wi.scale});el.textContent=A?f(A.speed,1)+' m/s':'';
+  });
+}
+function renderMath(full){
+  var sh=cur();if(!sh)return;
+  if(full){$('#mode-box').innerHTML=modeBox(sh);$('#wi-fps').value=S.wi.fps||sh.fps;renderTry(sh)}
+  modeSpeeds(sh);
+  var A=AN(sh),el=$('#math-steps');
+  if(!A){el.innerHTML='<div class="note warn">This shot needs at least 5 tracked frames before the math can run.</div>';return}
+  var fps=A.fps,sc=A.sc,bx=A.bx,by=A.by,st=[],sgn=function(v){return v<0?'\u2212':'+'},r=sh.ruler;
+  var modeName=(MODES.filter(function(m){return m[0]===A.mode})[0]||MODES[1])[1];
+  st.push({t:'Choose the scale',why:'Pixels have to become millimetres. The yardstick on the wall gives one answer. Gravity gives another, measured right where the bolt flew.',
+    eq:[(r?'yardstick: '+f(Math.abs(r[1]-r[0]),0)+' px \u00f7 914.4 mm = '+f(A.sr,4)+' px per mm':'yardstick scale: '+f(A.sr,4)+' px per mm (came with the data)'),
+      Number.isFinite(A.sg)?'gravity: a \u00d7 fps\u00b2 \u00f7 9810 = '+f(2*A.a2,4)+' \u00d7 '+f(fps*fps,0)+' \u00f7 9810 = '+f(A.sg,4)+' px per mm':'gravity: the path did not curve downward, so no gravity scale',
+      A.fit?'full fit: scale shifts to '+f(A.fit.rho,3)+' \u00d7 yardstick = '+f(A.fit.rho*A.sr,4)+' px per mm (\u00b1'+f(A.fit.seRho/A.fit.rho*100,0)+'%)':'full fit: needs at least 8 tracked frames',
+      'using: '+modeName.toLowerCase()+' = '+f(sc,4)+' px per mm'],
+    res:Number.isFinite(A.sg)?'The two scales differ by '+f(Math.abs(A.sg-A.sr)/A.sr*100,0)+'%, which moves the speed from '+f(A.speedG,1)+' to '+f(A.speedR,1)+' m/s':'Scale '+f(sc,4)+' px per mm'});
+  st.push({t:'Find the time between frames',why:'Slow motion records many frames each second. The frame rate turns frame counts into real time.',
+    eq:['\u0394t = 1 \u00f7 fps','= 1 \u00f7 '+f(fps,0)],res:f(A.dt*1000,3)+' ms per frame'});
+  st.push({t:'Horizontal speed',why:'Fit a straight line to the bolt’s x position. Its slope is how far the bolt moves each frame.',
+    eq:['x = '+f(bx[0],1)+' '+sgn(bx[1])+' '+f(Math.abs(bx[1]),2)+' \u00b7 n   (pixels, n = frame number)','slope = '+f(Math.abs(bx[1]),2)+' px/frame \u00f7 '+f(sc,4)+' = '+f(A.mmpf,2)+' mm/frame',f(A.mmpf,2)+' mm/frame \u00d7 '+f(fps,0)+' frames/s = '+f(A.mmpf*fps,0)+' mm/s'],
+    res:'v<sub>x</sub> = '+f(A.vx,2)+' m/s \u00b1 '+f(A.seV,2)+' from the fit'});
+  st.push({t:'Vertical speed at the start of the track',why:'The height follows a parabola because gravity keeps pulling. Its slope at the first tracked frame is the upward speed there.',
+    eq:['y = '+f(by[0],1)+' '+sgn(by[1])+' '+f(Math.abs(by[1]),3)+' \u00b7 n '+sgn(by[2])+' '+f(Math.abs(by[2]),4)+' \u00b7 n\u00b2   (pixels, down is +)','slope at n = 0 is '+f(by[1],3)+' px/frame (negative means up)',f(-by[1],3)+' \u00f7 '+f(sc,4)+' \u00d7 '+f(fps,0)+' \u00f7 1000'],
+    res:'v<sub>y</sub> = '+f(A.vy0,2)+' m/s '+(A.vy0>=0?'upward':'downward')});
+  st.push({t:'Combine them into speed',why:'The two parts make a right triangle. Speed is the long side.',
+    eq:['v = \u221a(v<sub>x</sub>\u00b2 + v<sub>y</sub>\u00b2)','= \u221a('+f(A.vx,2)+'\u00b2 + '+f(A.vy0,2)+'\u00b2)','= \u221a'+f(A.vx*A.vx+A.vy0*A.vy0,2)],
+    res:f(A.speed,2)+' m/s = '+f(A.speed*3.6,1)+' km/h = '+f(A.speed*2.23694,1)+' mph'});
+  st.push({t:'Angle at the start of the track',why:'Tangent is rise over run, so the angle is the arctangent of the two speeds. The scale cancels out, so the angle does not depend on it.',
+    eq:['\u03b8 = arctan(v<sub>y</sub> \u00f7 v<sub>x</sub>)','= arctan('+f(A.vy0,2)+' \u00f7 '+f(A.vx,2)+')','= arctan('+f(A.vy0/A.vx,4)+')'],res:f(A.angle,1)+'\u00b0'});
+  if(Number.isFinite(A.napex)){
+    st.push({t:'Top of the arc',why:'The bolt is at its peak when the slope of the height curve is zero.',
+      eq:['n* = \u2212c\u2081 \u00f7 (2 \u00b7 c\u2082)','= \u2212('+f(by[1],3)+') \u00f7 (2 \u00d7 '+f(by[2],4)+') = '+f(A.napex,1)+' frames','t* = '+f(A.napex,1)+' \u00f7 '+f(fps,0)+' = '+f(A.tApex*1000,0)+' ms','height gained = y(0) \u2212 y(n*) = '+f(A.rise*sc,1)+' px \u00f7 '+f(sc,4)],
+      res:(A.napex>A.n[A.n.length-1]?'Predicted peak about ':'Peak about ')+f(A.rise,0)+' mm above the start, after '+f(A.tApex*1000,0)+' ms'+(A.napex>A.n[A.n.length-1]?' (the bolt left the frame first, so this is a prediction)':'')});
+  }else{
+    st.push({t:'Top of the arc',why:'The peak only shows up if the bolt rises and then curves down inside the tracked frames.',eq:['The tracked frames do not include a peak.'],res:'No peak found'});
+  }
+  var tn=A.vy0/A.vx,cf=G0/(2*A.vx*A.vx),xe=A.mmpf*A.n[A.n.length-1]/1000,yp=tn*xe-cf*xe*xe,yf=(by[0]-pv(by,A.n[A.n.length-1]))/sc/1000;
+  st.push({t:'Write the path as an equation',why:'With no air, the path is y = x tan \u03b8 \u2212 g x\u00b2 \u00f7 (2 v<sub>x</sub>\u00b2). Put in your numbers and compare with what the camera saw.',
+    eq:['y = '+f(tn,4)+' \u00b7 x \u2212 '+f(cf,4)+' \u00b7 x\u00b2   (metres)','at x = '+f(xe,2)+' m the equation says y = '+f(yp*1000,1)+' mm','the video says y = '+f(yf*1000,1)+' mm'],
+    res:Math.abs(yp-yf)*1000<5?'The equation matches the video to within '+f(Math.abs(yp-yf)*1000,1)+' mm':'Off by '+f(Math.abs(yp-yf)*1000,1)+' mm (air and measurement error)'});
+  if(A.a2>0){
+    var pc=(A.gmeas/G0-1)*100;
+    st.push({t:'Check the path against gravity',why:'Gravity pulls anything down at 9.81 m/s\u00b2. If the measured bend disagrees, the scale is off, or air is pushing on the bolt.',
+      eq:['curvature a = 2 \u00b7 c\u2082 = '+f(2*A.a2,4)+' px per frame\u00b2','g measured = a \u00d7 fps\u00b2 \u00f7 (scale \u00d7 1000)','= '+f(2*A.a2,4)+' \u00d7 '+f(fps*fps,0)+' \u00f7 ('+f(sc,4)+' \u00d7 1000) = '+f(A.gmeas,2)+' m/s\u00b2'],
+      res:Math.abs(pc)<3?'Matches gravity within '+f(Math.abs(pc),1)+'%. This scale is trustworthy.':(pc>0?'Reads '+f(pc,0)+'% above real gravity. The bolt probably flew nearer the camera than this scale assumes, so the true speed is lower.':'Reads '+f(-pc,0)+'% below real gravity. The scale may be too large, or air lift is holding the bolt up.')});
+  }
+  if(A.fit){
+    st.push({t:'Fit the whole flight at once',why:'Instead of one number at a time, fit a complete flight with gravity and air drag to every tracked frame. It adjusts launch speed, angle, drag and the scale together, and because the bolt flew in front of the wall, the scale may grow from the yardstick’s but never shrink.',
+      eq:['speed '+f(A.fit.v0,2)+' \u00b1 '+f(A.fit.seV0,2)+' m/s','angle '+f(A.fit.th,2)+'\u00b0 \u00b1 '+f(A.fit.seTh,2),'air drag k '+f(A.fit.k,3)+' \u00b1 '+f(A.fit.seK,3)+' per metre   (deceleration = k \u00d7 v\u00b2)','scale factor '+f(A.fit.rho,3)+' \u00b1 '+f(A.fit.seRho,3)+'   (1 means the yardstick is right, 1.1 means the bolt looked 10% bigger)','fit quality \u03c7\u00b2 per degree of freedom = '+f(A.fit.chi2,2)],
+      res:A.fit.k>0.01?'Air slows this bolt by about '+f(A.fit.k*100,1)+'% for every metre it travels':'No clear air drag in this shot'});
+  }
+  var lines=['tracking scatter: '+f(A.rxs,1)+' px along the path, '+f(A.rys,2)+' px up and down','speed error from the line fit: \u00b1'+f(A.statRel*100,1)+'%'];
+  if(!sh.inPlane&&Number.isFinite(A.speedG))lines.push('scale: the yardstick gives '+f(A.speedR,1)+' m/s and gravity gives '+f(A.speedG,1)+' m/s');
+  lines.push('frame rate: '+f(fps,0)+' fps is set by the camera, so its error is negligible');
+  lines.push('air: drag slows a light beam by a few percent over this distance and can nudge the vertical curve');
+  st.push({t:'How sure are we?',why:'Tracking noise is small. The big unknown is the scale, because the bolt flew in a different plane from the yardstick.',eq:lines,
+    res:f(A.speed,1)+' m/s, somewhere from '+f(A.lo,1)+' to '+f(A.hi,1)});
+  el.innerHTML=st.map(function(s,i){return '<div class="step"><div class="badge" aria-hidden="true">'+(i+1)+'</div><div><h3>'+s.t+'</h3><div class="why">'+s.why+'</div><div class="eq">'+s.eq.map(function(l){return '<div>'+l+'</div>'}).join('')+'</div><div class="res">'+s.res+'</div></div></div>'}).join('');
+}
+function renderTry(sh){
+  var A=AN(sh);var el=$('#math-try');if(!A){el.innerHTML='';return}
+  var U=sh.pts.filter(function(p){return p[3]}),i0=Math.min(2,U.length-2),i1=Math.min(i0+5,U.length-1),fr=U[i1][0]-U[i0][0];
+  var dpx=Math.abs(U[i1][1]-U[i0][1]),dmm=dpx/A.sc,tt=fr/sh.fps,v1=dmm/1000/tt;
+  var h=0.8,tf=Math.sqrt(2*h/G0),dl=A.speed*tf;
+  var hp=A.vy0>0?A.vy0*A.vy0/(2*G0)*1000:NaN;
+  var items=[
+    ['Speed from two frames','Between two frames '+fr+' frames apart, the bolt moved '+f(dpx,1)+' px ('+f(dmm,0)+' mm). The camera recorded '+f(sh.fps,0)+' frames per second. How fast was the bolt going?',
+      'Time = '+fr+' \u00f7 '+f(sh.fps,0)+' = '+f(tt*1000,1)+' ms. Speed = '+f(dmm/1000,3)+' m \u00f7 '+f(tt,4)+' s = <b>'+f(v1,2)+' m/s</b>.'],
+    ['A table drop','Fire the bolt level off a table 0.8 m high at '+f(A.speed,1)+' m/s. How far from the table does it land?',
+      'Fall time t = \u221a(2h \u00f7 g) = \u221a(1.6 \u00f7 9.81) = '+f(tf,3)+' s. Distance = '+f(A.speed,2)+' \u00d7 '+f(tf,3)+' = <b>'+f(dl,2)+' m</b> (without air).'],
+    ['Splitting a launch','A different shot leaves at 8 m/s, 30\u00b0 above level. Find the horizontal and vertical parts.',
+      'v<sub>x</sub> = 8 cos 30\u00b0 = <b>6.93 m/s</b>. v<sub>y</sub> = 8 sin 30\u00b0 = <b>4.00 m/s</b>.'],
+    ['Unit change','Change '+f(A.speed,1)+' m/s into km/h and into miles per hour.',
+      'km/h: '+f(A.speed,2)+' \u00d7 3.6 = <b>'+f(A.speed*3.6,1)+'</b>. mph: '+f(A.speed,2)+' \u00d7 2.237 = <b>'+f(A.speed*2.23694,1)+'</b>.']
+  ];
+  if(Number.isFinite(hp)){
+    items.push(['How high should it rise?','The bolt starts upward at '+f(A.vy0,2)+' m/s. If only gravity pulls on it, how high does it climb? Use h = v\u00b2 \u00f7 (2g).',
+      'h = '+f(A.vy0,2)+'\u00b2 \u00f7 19.62 = <b>'+f(hp,1)+' mm</b>. The video measured '+(Number.isFinite(A.rise)?f(A.rise,1)+' mm':'no clear peak')+'. Why might they differ? (Air, and the camera clock.)']);
+  }
+  el.innerHTML=items.map(function(it,i){return '<div class="q"><b>Problem '+(i+1)+': '+it[0]+'.</b> '+it[1]+'</div><details><summary>Show the answer</summary><p>'+it[2]+'</p></details>'}).join('');
+}
+
+/* ---------- simulator ---------- */
+var SIMCTL=[['v','Launch speed','m/s',1,25,0.1,1],['ang','Launch angle','\u00b0',-10,80,0.5,1],['h','Launch height','m',0,2,0.01,2],['k','Air drag (0 means none)','',0,0.6,0.005,3]];
+var simBuilt=false;
+function simInit(){
+  if(!simBuilt){
+    simBuilt=true;
+    $('#sim-ctl').innerHTML=SIMCTL.map(function(c){return '<div class="row"><label for="sc-'+c[0]+'">'+c[1]+'</label><output id="so-'+c[0]+'" for="sc-'+c[0]+'"></output><input type="range" id="sc-'+c[0]+'" min="'+c[3]+'" max="'+c[4]+'" step="'+c[5]+'"></div>'}).join('')+
+      '<div class="row"><label for="sc-g">Gravity</label><output id="so-g"></output><select id="sc-g" style="grid-column:1/-1"><option value="9.81">Earth, 9.81 m/s\u00b2</option><option value="1.62">Moon, 1.62 m/s\u00b2</option><option value="3.71">Mars, 3.71 m/s\u00b2</option><option value="24.79">Jupiter, 24.79 m/s\u00b2</option></select></div>';
+    SIMCTL.forEach(function(c){$('#sc-'+c[0]).addEventListener('input',function(e){S.sim[c[0]]=parseFloat(e.target.value);S.sim.anim=null;simSync();simSchedule()})});
+    $('#sc-g').addEventListener('change',function(e){S.sim.g=parseFloat(e.target.value);S.sim.anim=null;simSync();simSchedule()});
+    $('#sim-fire').addEventListener('click',simFire);
+    $('#sim-cal').addEventListener('click',simCalibrate);
+    $('#sim-use').addEventListener('click',simUse);
+    $('#sim-speed').addEventListener('change',function(e){S.sim.speed=parseFloat(e.target.value)});
+    [['sim-equal','equal'],['sim-nodrag','nodrag'],['sim-meas','meas']].forEach(function(p){$('#'+p[0]).addEventListener('change',function(e){S.sim[p[1]]=e.target.checked;simPaint(null)})});
+    var A0=cur()?AN(cur()):null;if(A0){S.sim.v=Math.round(A0.speed*10)/10;S.sim.ang=Math.round(A0.angle*10)/10;if(A0.fit)S.sim.k=Math.min(0.6,Math.max(0,Math.round(A0.fit.k*1000)/1000))}
+  }
+  var cs=cur();if(cs&&S.sim.landFor!==cs.id){S.sim.landFor=cs.id;$('#sim-land').value=cs.landing!=null?cs.landing:''}
+  simSync();simPaint(null);simRange();
+}
+var simQ=false,simRT=0;
+function simSchedule(){
+  if(!simQ){simQ=true;requestAnimationFrame(function(){simQ=false;simPaint(null)})}
+  clearTimeout(simRT);simRT=setTimeout(simRange,140);
+}
+function simSync(){
+  SIMCTL.forEach(function(c){var v=S.sim[c[0]];$('#sc-'+c[0]).value=v;$('#so-'+c[0]).textContent=f(v,c[6])+(c[2]?' '+c[2]:'')});
+  $('#sc-g').value=String(S.sim.g);$('#so-g').textContent=f(S.sim.g,2)+' m/s\u00b2';
+}
+function simUse(){
+  var A=cur()?AN(cur()):null;if(!A)return;
+  S.sim.v=Math.min(25,Math.max(1,Math.round(A.speed*10)/10));S.sim.ang=Math.round(A.angle*10)/10;if(A.fit)S.sim.k=Math.min(0.6,Math.max(0,Math.round(A.fit.k*1000)/1000));S.sim.meas=true;$('#sim-meas').checked=true;S.sim.anim=null;
+  simSync();simPaint(null);simRange();
+}
+function simCompute(){var p=S.sim;p.res=simulate({v:p.v,ang:p.ang,h:p.h,k:p.k,g:p.g});p.res0=p.k>0?simulate({v:p.v,ang:p.ang,h:p.h,k:0,g:p.g}):p.res}
+function atTime(pts,t){
+  if(t<=0)return pts[0];
+  for(var i=1;i<pts.length;i++){if(t<=pts[i][0]){var a=pts[i-1],b=pts[i],u=(t-a[0])/((b[0]-a[0])||1);return [t,a[1]+(b[1]-a[1])*u,a[2]+(b[2]-a[2])*u,a[3]+(b[3]-a[3])*u,a[4]+(b[4]-a[4])*u]}}
+  return pts[pts.length-1];
+}
+function simPaint(tNow){
+  if(tNow==null||!S.sim.res)simCompute();
+  var p=S.sim,R=p.res,R0=p.res0,sh=cur(),A=sh?AN(sh):null;
+  var xmax=Math.max(R.range,R0.range,0.6)*1.08,ymax=Math.max(R.apex.y,R0.apex.y,0.1)*1.25;
+  var measPts=null;
+  if(p.meas&&A){measPts=A.X.map(function(x,i){return [(x-A.bx[0])/A.sc*A.dir/1000,p.h+(A.by[0]-A.Y[i])/A.sc/1000]})}
+  chart($('#sim-cv'),{xmin:0,xmax:xmax,ymin:0,ymax:ymax,equal:p.equal,xlabel:'distance (m)',ylabel:'height (m)',draw:function(ctx,X,Y,g){
+    if(p.k>0&&p.nodrag)line(ctx,X,Y,R0.pts.map(function(q){return [q[1],q[2]]}),css('--muted'),2,[6,5]);
+    var full=R.pts.map(function(q){return [q[1],q[2]]});
+    line(ctx,X,Y,full,css('--blue'),tNow==null?3:1.5);
+    if(tNow!=null){var part=[];for(var i=0;i<R.pts.length&&R.pts[i][0]<=tNow;i++)part.push([R.pts[i][1],R.pts[i][2]]);var c0=atTime(R.pts,tNow);part.push([c0[1],c0[2]]);line(ctx,X,Y,part,css('--blue'),3.5)}
+    if(measPts)dots(ctx,X,Y,measPts,css('--orange'),3.2);
+    var c=atTime(R.pts,tNow==null?0:tNow),e=1e-3,ang=Math.atan2(Y(c[2]+c[4]*e)-Y(c[2]),X(c[1]+c[3]*e)-X(c[1]));
+    drawBolt(ctx,X(c[1]),Y(c[2]),Math.max(12,X(0.104)-X(0)),4,ang,1);
+    var lx=X(R.range);ctx.strokeStyle=css('--orange');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(lx,Y(0)-8);ctx.lineTo(lx,Y(0)+8);ctx.stroke();
+    ctx.fillStyle=css('--orange');ctx.textAlign='right';ctx.textBaseline='bottom';ctx.fillText('lands at '+f(R.range,2)+' m',Math.min(lx-4,X(xmax)-4),Y(0)-10);
+    var st=Math.abs(Y(1)-Y(0))/Math.abs(X(1)-X(0));
+    if(st>1.15){ctx.fillStyle=css('--orange');ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText('Height stretched \u00d7'+f(st,1)+': angles look steeper than real',g.m.l+8,g.m.t+6)}
+  }});
+  if(tNow!=null)return;
+  var rows=[['Range',f(R.range,2),'m'],['Flight time',f(R.T,2),'s'],['Peak height',f(R.apex.y,2),'m at '+f(R.apex.x,2)+' m'],['Impact speed',f(R.impact,1),'m/s']];
+  if(p.k>0)rows.push(['Range with no air',f(R0.range,2),'m']);
+  $('#sim-read').innerHTML=rows.map(function(r){return '<div><dt>'+r[0]+'</dt><dd>'+r[1]+' <small>'+r[2]+'</small></dd></div>'}).join('');
+  $('#sim-test').innerHTML='<b>Test it for real.</b> Set the bolt so it leaves '+f(p.h,2)+' m above the floor, fire it, and mark where it lands. This model says about '+f(R.range,1)+' m away'+(p.k>0?' ('+f(R0.range,1)+' m with no air)':'')+'. The video only shows the first metre or so, so treat this as a best case: tumbling and air usually shorten a real flight. Measure the real landing and use “Match the drag” below to calibrate.';
+}
+function solveDrag(target,v,ang,h,g){
+  var r0=simulate({v:v,ang:ang,h:h,k:0,g:g,dt:0.001}).range;
+  if(target>=r0)return {k:0,max:r0,over:true};
+  var lo=0,hi=2,i;
+  for(i=0;i<50;i++){var mid=(lo+hi)/2;if(simulate({v:v,ang:ang,h:h,k:mid,g:g,dt:0.001}).range>target)lo=mid;else hi=mid}
+  return {k:(lo+hi)/2,max:r0,over:false};
+}
+function simCalibrate(){
+  var out=$('#sim-cal-out'),p=S.sim,L=parseFloat($('#sim-land').value),gap=parseFloat($('#sim-gap').value)||0;
+  out.hidden=false;
+  if(!(L>gap)){out.className='note warn';out.textContent='Enter the landing distance in metres, measured from the crossbow.';return}
+  var t=L-gap,s=solveDrag(t,p.v,p.ang,p.h,p.g);
+  if(s.over){out.className='note warn';out.textContent='With no air at all, these settings land at '+f(s.max+gap,2)+' m, which is shorter than your '+f(L,2)+' m. Check the speed, angle and launch height above.';return}
+  var a=solveDrag(t,p.v,p.ang,p.h+0.07,p.g),b=solveDrag(t,p.v,p.ang,Math.max(0,p.h-0.07),p.g),ks=[a.k,b.k,s.k].sort(function(x,y){return x-y});
+  S.sim.k=Math.min(0.6,s.k);S.sim.anim=null;simSync();simPaint(null);simRange();
+  out.className='note good';
+  out.innerHTML='<b>Effective drag k = '+f(s.k,3)+' per metre</b>, so the bolt loses about '+f(s.k*100,0)+'% of its speed for every metre. If the launch height is really '+f(Math.max(0,p.h-0.07),2)+' to '+f(p.h+0.07,2)+' m, k is '+f(ks[0],3)+' to '+f(ks[2],3)+'. The drag slider and the charts now use it.'+(s.k>0.6?' (The slider stops at 0.6.)':'');
+}
+function simFire(){
+  var p=S.sim;simCompute();var T=p.res.T,start=performance.now(),tok={};p.anim=tok;
+  (function tick(now){
+    if(S.sim.anim!==tok||S.tab!=='simulate')return;
+    var el=(now-start)/1000*S.sim.speed,t=Math.min(el,T);simPaint(t);
+    if(el<T)requestAnimationFrame(tick);else S.sim.anim=null;
+  })(start);
+}
+function sweepDt(){var p=S.sim,vy=p.v*0.7,e=(vy+Math.sqrt(vy*vy+2*p.g*Math.max(0,p.h)))/p.g;return Math.min(0.01,e/1500)}
+function simRange(){
+  var p=S.sim,a,pts=[],pts0=[],best={a:0,r:-1};
+  for(a=-10;a<=80;a+=2){var r=simulate({v:p.v,ang:a,h:p.h,k:p.k,g:p.g,dt:Math.max(0.002,sweepDt()) }).range;pts.push([a,r]);if(r>best.r)best={a:a,r:r};if(p.k>0)pts0.push([a,simulate({v:p.v,ang:a,h:p.h,k:0,g:p.g,dt:Math.max(0.002,sweepDt())}).range])}
+  var ymax=Math.max.apply(null,pts.concat(pts0).map(function(q){return q[1]}))*1.1+0.1;
+  var cr=p.res?p.res.range:0;
+  chart($('#sim-rng'),{xmin:-10,xmax:80,ymin:0,ymax:ymax,xlabel:'launch angle (degrees)',ylabel:'range (m)',draw:function(ctx,X,Y){
+    if(p.k>0)line(ctx,X,Y,pts0,css('--muted'),2,[6,5]);
+    line(ctx,X,Y,pts,css('--blue'),3);
+    ctx.fillStyle=css('--orange');ctx.beginPath();ctx.arc(X(p.ang),Y(cr),6,0,6.2832);ctx.fill();
+    ctx.fillStyle=css('--blue');ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText('best about '+best.a+'\u00b0',X(best.a),Y(best.r)-8);
+  }});
+  $('#sim-rng-note').textContent='With the settings above, the farthest shot leaves at about '+best.a+'\u00b0 and lands '+f(best.r,1)+' m away. Your current angle is the orange dot.'+(p.h>0.05?' Launching from a height pushes the best angle below 45\u00b0.':'');
+}
+
+/* ---------- data ---------- */
+function canDelete(s){return !s.seedOnly&&(S.dbOn?S.canWrite!==false:true)&&!(S.dbOn&&S.dbDocs.length===0)}
+function renderData(){
+  var st=$('#data-status');
+  st.textContent=S.dbOn?(S.canWrite===false?'Shared shots. You can view them but not change them.':'Shots are saved with this page and open for everyone you share it with.'):'Shots you add here stay on this device.';
+  $('#data-list').innerHTML=S.shots.map(function(s){
+    var A=AN(s),used=s.pts.filter(function(p){return p[3]}).length;
+    var meta=(A?f(A.speed,1)+' m/s at '+f(A.angle,1)+'\u00b0':'not enough frames')+', '+used+' frames at '+f(s.fps,0)+' fps'+(s.setupAngle!=null?', aimed at '+f(s.setupAngle,1)+'\u00b0':'')+(s.twists!=null?', '+s.twists+' band twists':'')+(s.landing!=null?', landed '+f(s.landing,2)+' m from the crossbow':'');
+    return '<div class="shotrow"><span><b>'+esc(s.label)+'</b><br><small>'+esc(meta)+(s.note?'<br>'+esc(s.note):'')+'</small></span><span><button class="btn" type="button" data-open="'+esc(s.id)+'">Open</button> '+(canDelete(s)?'<button class="btn danger" type="button" data-del="'+esc(s.id)+'">'+(S.delArm===s.id?'Tap to confirm':'Delete')+'</button>':'')+'</span></div>';
+  }).join('');
+  var lab=$('#ad-label');if(!lab.value)lab.placeholder='Shot '+(S.shots.length+1);
+  $('#dl-bar').style.display='none';
+  if(window.claude&&claude.use)claude.use('downloads').then(function(d){if(d)$('#dl-bar').style.display=''}).catch(function(){});
+}
+function slug(){return 's'+Date.now().toString(36)+Math.floor(Math.random()*1296).toString(36)}
+function addShot(){
+  var msg=$('#ad-msg'),res=parseTrackCsv($('#ad-csv').value);
+  if(res.error){msg.textContent=res.error;return}
+  var fps=parseFloat($('#ad-fps').value);if(!(fps>0)){msg.textContent='Enter the recording frame rate, for example 240.';return}
+  var ang=$('#ad-angle').value,tw=$('#ad-twists').value;
+  var doc=cleanDoc(slug(),{order:S.shots.length+1,label:$('#ad-label').value.trim()||('Shot '+(S.shots.length+1)),fps:fps,scale:1,ruler:[0,914.4],rulerY:0,setupAngle:ang===''?null:parseFloat(ang),twists:tw===''?null:parseFloat(tw),inPlane:$('#ad-plane').checked,landing:$('#ad-land').value===''?null:parseFloat($('#ad-land').value),note:'Added by hand from a tracker CSV.',video:'',pts:res.pts});
+  if(!AN(doc)){msg.textContent='Those rows did not give enough usable frames.';return}
+  msg.textContent='Saving\u2026';
+  var done=function(where){msg.textContent=where==='db'?'Added.':'Added on this device.';$('#ad-csv').value='';$('#ad-label').value='';S.sel=doc.id;renderChips();renderData()};
+  if(S.db&&S.canWrite!==false){
+    S.db.collection('shots').doc(doc.id).set(doc).then(function(){done('db')}).catch(function(e){
+      if(e&&e.code==='invalid_argument')S.canWrite=false;
+      S.local.push(doc);persistLocal();mergeShots();done('local');
+    });
+  }else{S.local.push(doc);persistLocal();mergeShots();done('local')}
+}
+function delShot(id){
+  if(S.delArm!==id){S.delArm=id;renderData();return}
+  S.delArm=null;
+  var inLocal=S.local.some(function(d){return d.id===id});
+  if(inLocal){S.local=S.local.filter(function(d){return d.id!==id});persistLocal();mergeShots();renderData();return}
+  if(S.db){S.db.collection('shots').doc(id).delete().catch(function(){}).then(function(){renderData()})}
+}
+function csvOut(kind){
+  var rows=[];
+  if(kind==='sum'){
+    rows.push(['shot','aimed_deg','band_twists','fps','scale_used_px_per_mm','speed_m_s','vx_m_s','vy0_m_s','angle_deg','peak_mm','speed_low_m_s','speed_high_m_s','gravity_scale_px_per_mm']);
+    S.shots.forEach(function(s){var A=AN(s);if(A)rows.push([s.label,s.setupAngle==null?'':s.setupAngle,s.twists==null?'':s.twists,s.fps,A.sc.toFixed(4),A.speed.toFixed(3),A.vx.toFixed(3),A.vy0.toFixed(3),A.angle.toFixed(2),Number.isFinite(A.rise)?A.rise.toFixed(1):'',A.lo.toFixed(2),A.hi.toFixed(2),Number.isFinite(A.sg)?A.sg.toFixed(4):''])});
+  }else{
+    rows.push(['shot','frame','t_ms','x_mm','height_mm','used_in_fit']);
+    S.shots.forEach(function(s){var A=AN(s);if(!A)return;s.pts.forEach(function(p){var n=p[0]-A.n0;rows.push([s.label,n,(n/A.fps*1000).toFixed(2),((p[1]-A.bx[0])/A.sc*A.dir).toFixed(1),((A.by[0]-p[2])/A.sc).toFixed(1),p[3]])})});
+  }
+  return rows.map(function(r){return r.map(function(v){v=String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(',')}).join('\n');
+}
+function download(kind){
+  if(!(window.claude&&claude.use))return;
+  claude.use('downloads').then(function(d){if(!d)return;return d.save({filename:kind==='sum'?'crossbow-results.csv':'crossbow-tracked-points.csv',data:csvOut(kind)})}).catch(function(){});
+}
+
+/* ---------- data sync ---------- */
+function mergeShots(){
+  var base=S.dbOn?(S.dbDocs.length?S.dbDocs:SEED.map(function(s){return Object.assign({seedOnly:true},s)})):SEED.concat(S.local);
+  if(S.dbOn&&S.dbDocs.length===0)base=base.concat(S.local);
+  var sig=JSON.stringify(base)+'|'+S.dbOn+'|'+S.canWrite;
+  if(sig===S.sig)return;S.sig=sig;S.shots=base;
+  if(!S.shots.some(function(s){return s.id===S.sel}))S.sel=S.shots[0].id;
+  renderChips();renderActive();
+}
+function initDb(){
+  if(!(window.claude&&claude.use))return;
+  claude.use('db').then(function(db){
+    if(!db)return;
+    S.db=db;S.dbOn=true;
+    return claude.use('user').then(function(u){
+      if(u&&typeof u.can==='function'){return Promise.resolve(u.can('data.write')).then(function(c){S.canWrite=c===true?true:(c===false?false:null)})}
+    }).catch(function(){}).then(function(){
+      db.collection('shots').onSnapshot(function(snap){
+        var arr=[];snap.docs.forEach(function(d){var c=cleanDoc(d.id,d.data());if(c)arr.push(c)});
+        arr.sort(function(a,b){return a.order-b.order||a.label.localeCompare(b.label)});
+        S.dbDocs=arr;mergeShots();
+      },function(){S.dbOn=false;mergeShots()});
+    });
+  }).catch(function(){});
+}
+
+/* ---------- wiring ---------- */
+$('#tabs').addEventListener('click',function(e){var b=e.target.closest('button');if(b)showTab(b.dataset.t,true)});
+$('#chips').addEventListener('click',function(e){var b=e.target.closest('.chip');if(b)selectShot(b.dataset.id)});
+$('#rp-play').addEventListener('click',function(){if(S.rp.playing){S.rp.playing=false;$('#rp-play').textContent='Play'}else rpPlay()});
+$('#rp-scrub').addEventListener('input',function(e){var b=rpBounds();if(!b)return;S.rp.playing=false;$('#rp-play').textContent='Play';S.rp.t=b.min+parseFloat(e.target.value)/1000*(b.max-b.min);paintReplay()});
+$('#rp-speed').addEventListener('change',function(e){S.rp.speed=parseFloat(e.target.value)});
+$('#rp-vec').addEventListener('change',function(e){S.rp.vec=e.target.checked;paintReplay()});
+$('#tab-results').addEventListener('click',function(e){var tr=e.target.closest('tr.pick');if(tr)selectShot(tr.dataset.id)});
+$('#wi-fps').addEventListener('input',function(e){var v=parseFloat(e.target.value);S.wi.fps=v>0?v:null;renderMath(false)});
+$('#mode-box').addEventListener('change',function(e){if(e.target.name==='mode'){S.mode=e.target.value;renderMath(false)}});
+$('#mode-box').addEventListener('input',function(e){if(e.target.id==='wi-scale'){var v=parseFloat(e.target.value);S.wi.scale=v>0?v:null;if(S.wi.scale){S.mode='custom';var rd=$('input[name=mode][value=custom]');if(rd)rd.checked=true}renderMath(false)}});
+$('#wi-reset').addEventListener('click',function(){S.wi.fps=null;S.wi.scale=null;S.mode='fit';renderMath(true)});
+function dropCalc(){
+  var h=parseFloat($('#dr-h').value),d=parseFloat($('#dr-d').value),out=$('#dr-out'),A=cur()?AN(cur()):null;
+  if(!(h>0)||!(d>0)){out.textContent='Enter the distance to see the speed.';return}
+  var t=Math.sqrt(2*h/G0),v=d/t,msg='Fall time \u221a(2 \u00d7 '+f(h,2)+' \u00f7 9.81) = '+f(t,3)+' s. Speed = '+f(d,2)+' \u00f7 '+f(t,3)+' = <b>'+f(v,2)+' m/s</b>.';
+  if(A)msg+=' The video said '+f(A.speed,2)+' m/s, a difference of '+f(Math.abs(v-A.speed)/A.speed*100,0)+'%. Part of any gap is air drag, aim and measurement error.';
+  out.innerHTML=msg;
+}
+$('#dr-h').addEventListener('input',dropCalc);$('#dr-d').addEventListener('input',dropCalc);
+$('#ad-go').addEventListener('click',addShot);
+$('#data-list').addEventListener('click',function(e){
+  var o=e.target.closest('[data-open]'),d=e.target.closest('[data-del]');
+  if(o){S.sel=o.dataset.open;renderChips();showTab('results',true)}
+  else if(d)delShot(d.dataset.del);
+});
+$('#dl-sum').addEventListener('click',function(){download('sum')});
+$('#dl-pts').addEventListener('click',function(){download('pts')});
+var rz;window.addEventListener('resize',function(){clearTimeout(rz);rz=setTimeout(repaint,150)});
+if(window.matchMedia){try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){setTimeout(repaint,30)})}catch(e){}}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){repaint()});
+
+renderChips();
+var h0=(location.hash||'').replace('#','');
+showTab(TABS.indexOf(h0)>=0?h0:'replay',false);
+initDb();
+})();
+</script>
+</body>
+</html>
